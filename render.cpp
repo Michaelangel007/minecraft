@@ -13,22 +13,22 @@
 
 std::vector<std::string> SkyBoxFaces{
 
-    "sources/skybox/px.jpg",
-    "sources/skybox/nx.jpg",
-    "sources/skybox/py.jpg",
-    "sources/skybox/ny.jpg",
-    "sources/skybox/pz.jpg",
-    "sources/skybox/nz.jpg"
+    "data/skybox/px.jpg",
+    "data/skybox/nx.jpg",
+    "data/skybox/py.jpg",
+    "data/skybox/ny.jpg",
+    "data/skybox/pz.jpg",
+    "data/skybox/nz.jpg"
 };
 
-const char* shaderPathSkyBoxVert = "sources/shaders/SkyboxVertex.glsl";
-const char* shaderPathSkyBoxFrag = "sources/shaders/SkyboxFrag.glsl";
-const char* shaderPathLightVert = "sources/shaders/LightVertex.glsl";
-const char* shaderPathLightFrag = "sources/shaders/LightFrag.glsl";
-const char* shaderPathMainVert = "sources/shaders/MainVertex.glsl";
-const char* shaderPathMainFrag = "sources/shaders/MainFrag.glsl";
-const char* shaderPathDepthVert = "sources/shaders/DepthShadowVertex.glsl";
-const char* shaderPathDepthFrag = "sources/shaders/DepthShadowFrag.glsl";
+const char* shaderPathSkyBoxVert = "data/shaders/SkyboxVertex.glsl";
+const char* shaderPathSkyBoxFrag = "data/shaders/SkyboxFrag.glsl";
+const char* shaderPathLightVert = "data/shaders/LightVertex.glsl";
+const char* shaderPathLightFrag = "data/shaders/LightFrag.glsl";
+const char* shaderPathMainVert = "data/shaders/MainVertex.glsl";
+const char* shaderPathMainFrag = "data/shaders/MainFrag.glsl";
+const char* shaderPathDepthVert = "data/shaders/DepthShadowVertex.glsl";
+const char* shaderPathDepthFrag = "data/shaders/DepthShadowFrag.glsl";
 
 GLFWwindow* window = nullptr;
 extern Camera camera;

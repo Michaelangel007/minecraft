@@ -903,7 +903,7 @@ void updateMesh(chunk& chunk) {
     if(!chunk.opaqueMesh.empty()) {
         if (chunk.opaqueMeshObj == NULL) {
             chunk.opaqueMeshObj = setupMeshTexture(chunk.opaqueMesh, glm::vec3(chunk.key.x * CHUNKWIDTH, 0, chunk.key.y * CHUNKWIDTH), false, true, false);
-            setMeshTextureFile(chunk.opaqueMeshObj, "sources/textures/all.png");
+            setMeshTextureFile(chunk.opaqueMeshObj, "data/textures/all.png");
         }else {
             updateMeshTexture(chunk.opaqueMeshObj, chunk.opaqueMesh);
         }
@@ -912,7 +912,7 @@ void updateMesh(chunk& chunk) {
     if (!chunk.opaqueNoShadowMesh.empty()) {
         if (chunk.opaqueNoShadowMeshObj == NULL) {
             chunk.opaqueNoShadowMeshObj = setupMeshTexture(chunk.opaqueNoShadowMesh, glm::vec3(chunk.key.x * CHUNKWIDTH, 0, chunk.key.y * CHUNKWIDTH), false, false, false);
-            setMeshTextureFile(chunk.opaqueNoShadowMeshObj, "sources/textures/all.png");
+            setMeshTextureFile(chunk.opaqueNoShadowMeshObj, "data/textures/all.png");
         }
         else {
             updateMeshTexture(chunk.opaqueNoShadowMeshObj, chunk.opaqueNoShadowMesh);
@@ -923,7 +923,7 @@ void updateMesh(chunk& chunk) {
     if (!chunk.transpMesh.empty()) {
         if (chunk.transpMeshObj == NULL) {
             chunk.transpMeshObj = setupMeshTexture(chunk.transpMesh, glm::vec3(chunk.key.x * CHUNKWIDTH, 0, chunk.key.y * CHUNKWIDTH), true, true, false);
-            setMeshTextureFile(chunk.transpMeshObj, "sources/textures/all.png");
+            setMeshTextureFile(chunk.transpMeshObj, "data/textures/all.png");
         }
         else {
             updateMeshTexture(chunk.transpMeshObj, chunk.transpMesh);
@@ -933,7 +933,7 @@ void updateMesh(chunk& chunk) {
     if (!chunk.transpNoShadowMesh.empty()) {
         if (chunk.transpNoShadowMeshObj == NULL) {
             chunk.transpNoShadowMeshObj = setupMeshTexture(chunk.transpNoShadowMesh, glm::vec3(chunk.key.x * CHUNKWIDTH, 0, chunk.key.y * CHUNKWIDTH), true, false, false);
-            setMeshTextureFile(chunk.transpNoShadowMeshObj, "sources/textures/all.png");
+            setMeshTextureFile(chunk.transpNoShadowMeshObj, "data/textures/all.png");
         }
         else {
             updateMeshTexture(chunk.transpNoShadowMeshObj, chunk.transpNoShadowMesh);
@@ -944,7 +944,7 @@ void updateMesh(chunk& chunk) {
     if (!chunk.plantMesh.empty()) {
         if (chunk.plantMeshObj == NULL) {
             chunk.plantMeshObj = setupMeshTexture(chunk.plantMesh, glm::vec3(chunk.key.x * CHUNKWIDTH, 0, chunk.key.y * CHUNKWIDTH), false, true, true);
-            setMeshTextureFile(chunk.plantMeshObj, "sources/textures/all.png");
+            setMeshTextureFile(chunk.plantMeshObj, "data/textures/all.png");
         }
         else {
             updateMeshTexture(chunk.plantMeshObj, chunk.plantMesh);
