@@ -28,36 +28,36 @@
     <None Include="..\Vertex.glsl" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\blocks.cpp">
+    <ClCompile Include="..\source\blocks.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="..\minecraft.cpp">
+    <ClCompile Include="..\source\minecraft.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="..\render.cpp">
+    <ClCompile Include="..\source\render.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="..\structure.cpp">
+    <ClCompile Include="..\source\structure.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\blocks.h">
+    <ClInclude Include="..\source\blocks.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="..\camera.h">
+    <ClInclude Include="..\source\camera.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="..\db_perlin.hpp">
+    <ClInclude Include="..\source\db_perlin.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="..\render.hpp">
+    <ClInclude Include="..\source\render.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="..\stb_image.h">
+    <ClInclude Include="..\stb\stb_image.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="..\structure.h">
+    <ClInclude Include="..\source\structure.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
   </ItemGroup>

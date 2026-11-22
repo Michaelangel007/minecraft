@@ -9,6 +9,6 @@ The following thing were cleaned up:
    c) Cleanup code using asset names to match. i.e. `setMeshTextureFile(chunk.opaqueMeshObj, "sources/textures/all.png");` to `setMeshTextureFile(chunk.opaqueMeshObj, "data/textures/all.png");`
 4. Make build directory
 5. Move MSVC Solution and Project files to build\
-   a) Fix include dirs: Properties > C++ > General > Additional Include Directories > `$(SolutionDir)..\GLFW\include;$(SolutionDir)..\GLEW\include;$(SolutionDir)..\;%(AdditionalIncludeDirectories)`
+   a) Fix include dirs: Properties > C++ > General > Additional Include Directories > `$(SolutionDir)..\GLFW\include;$(SolutionDir)..\GLEW\include;$(SolutionDir)..\;$(SolutionDir)..\stb\;$(SolutionDir)..\source\;%(AdditionalIncludeDirectories)`
    b) Fix linker dirs: Properties > Linker > General > Additional Library Directories > `$(SolutionDir)..\GLFW\lib-vc2022;$(SolutionDir)..\GLEW\lib\Release\x64;%(AdditionalLibraryDirectories)`
    c) Fix debugging dir: Properties > Debugging > Working Directory > `$(ProjectDir)..\`

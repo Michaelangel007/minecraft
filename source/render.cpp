@@ -8,7 +8,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "stb_image.h"
+#include <stb_image.h>
 #include "render.hpp"
 
 std::vector<std::string> SkyBoxFaces{

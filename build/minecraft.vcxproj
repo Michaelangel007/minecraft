@@ -104,7 +104,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\GLFW\include;$(SolutionDir)..\GLEW\include;$(SolutionDir)..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\GLFW\include;$(SolutionDir)..\GLEW\include;$(SolutionDir)..\;$(SolutionDir)..\stb\;$(SolutionDir)..\source\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -122,7 +122,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\GLFW\include;$(SolutionDir)..\GLEW\include;$(SolutionDir)..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\GLFW\include;$(SolutionDir)..\GLEW\include;$(SolutionDir)..\;$(SolutionDir)..\stb\;$(SolutionDir)..\source\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -148,18 +148,18 @@
     <None Include="..\Vertex.glsl" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\blocks.cpp" />
-    <ClCompile Include="..\minecraft.cpp" />
-    <ClCompile Include="..\render.cpp" />
-    <ClCompile Include="..\structure.cpp" />
+    <ClCompile Include="..\source\blocks.cpp" />
+    <ClCompile Include="..\source\minecraft.cpp" />
+    <ClCompile Include="..\source\render.cpp" />
+    <ClCompile Include="..\source\structure.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\blocks.h" />
-    <ClInclude Include="..\camera.h" />
-    <ClInclude Include="..\db_perlin.hpp" />
-    <ClInclude Include="..\render.hpp" />
-    <ClInclude Include="..\stb_image.h" />
-    <ClInclude Include="..\structure.h" />
+    <ClInclude Include="..\source\blocks.h" />
+    <ClInclude Include="..\source\camera.h" />
+    <ClInclude Include="..\source\db_perlin.hpp" />
+    <ClInclude Include="..\source\render.hpp" />
+    <ClInclude Include="..\stb\stb_image.h" />
+    <ClInclude Include="..\source\structure.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
