@@ -1316,10 +1316,48 @@ void processClick() {
                 glm::ivec3 posPlayerInt = glm::ivec3(glm::floor(camera.Position.x), glm::floor(camera.Position.y), glm::floor(camera.Position.z));
                 if (airBlockPos != posPlayerInt && airBlockPos != (posPlayerInt - glm::ivec3(0, 1, 0))) {
                     chunkIt->second.blocks[localX][airBlockPos.y][localZ] = currentBlock;
-                }
 
-                Chunk& chunk = chunkIt->second;
-                updateMesh(chunk);
+                    Chunk& chunk = chunkIt->second;
+                    updateMesh(chunk);
+
+                    // Update seams between chunks
+                    if (localX == 0) {
+                        ChunkKey westKey = { chunk.key.x - 1, chunk.key.y };
+                        auto westIt = chunks.find(westKey);
+                        if (westIt != chunks.end()) {
+                            if (westIt->second.isActive) {
+                                updateMesh(westIt->second);
+                            }
+                        }
+                    }
+                    if (localX == CHUNKWIDTH - 1) {
+                        ChunkKey eastKey = { chunk.key.x + 1, chunk.key.y };
+                        auto eastIt = chunks.find(eastKey);
+                        if (eastIt != chunks.end()) {
+                            if (eastIt->second.isActive) {
+                                updateMesh(eastIt->second);
+                            }
+                        }
+                    }
+                    if (localZ == 0) {
+                        ChunkKey northKey = { chunk.key.x, chunk.key.y - 1 };
+                        auto northIt = chunks.find(northKey);
+                        if (northIt != chunks.end()) {
+                            if (northIt->second.isActive) {
+                                updateMesh(northIt->second);
+                            }
+                        }
+                    }
+                    if (localZ == CHUNKWIDTH - 1) {
+                        ChunkKey southKey = { chunk.key.x, chunk.key.y + 1 };
+                        auto southIt = chunks.find(southKey);
+                        if (southIt != chunks.end()) {
+                            if (southIt->second.isActive) {
+                                updateMesh(southIt->second);
+                            }
+                        }
+                    }
+                }
             }
         }
     }
