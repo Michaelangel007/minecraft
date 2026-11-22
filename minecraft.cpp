@@ -909,6 +909,11 @@ void updateMesh(chunk& chunk) {
         }
         setMeshPosition(chunk.opaqueMeshObj, glm::vec3(chunk.key.x* CHUNKWIDTH, 0, chunk.key.y* CHUNKWIDTH));
     }
+    else if (chunk.opaqueMeshObj != nullptr) {
+        deleteMesh(chunk.opaqueMeshObj);
+        chunk.opaqueMeshObj = nullptr;
+    }
+
     if (!chunk.opaqueNoShadowMesh.empty()) {
         if (chunk.opaqueNoShadowMeshObj == NULL) {
             chunk.opaqueNoShadowMeshObj = setupMeshTexture(chunk.opaqueNoShadowMesh, glm::vec3(chunk.key.x * CHUNKWIDTH, 0, chunk.key.y * CHUNKWIDTH), false, false, false);
@@ -918,6 +923,10 @@ void updateMesh(chunk& chunk) {
             updateMeshTexture(chunk.opaqueNoShadowMeshObj, chunk.opaqueNoShadowMesh);
         }
         setMeshPosition(chunk.opaqueNoShadowMeshObj, glm::vec3(chunk.key.x * CHUNKWIDTH, 0, chunk.key.y * CHUNKWIDTH));
+    }
+    else if (chunk.opaqueNoShadowMeshObj != nullptr) {
+        deleteMesh(chunk.opaqueNoShadowMeshObj);
+        chunk.opaqueNoShadowMeshObj = nullptr;
     }
 
     if (!chunk.transpMesh.empty()) {
@@ -930,6 +939,11 @@ void updateMesh(chunk& chunk) {
         }
         setMeshPosition(chunk.transpMeshObj, glm::vec3(chunk.key.x * CHUNKWIDTH, 0, chunk.key.y * CHUNKWIDTH));
     }
+    else if (chunk.transpMeshObj != nullptr) {
+        deleteMesh(chunk.transpMeshObj);
+        chunk.transpMeshObj = nullptr;
+    }
+
     if (!chunk.transpNoShadowMesh.empty()) {
         if (chunk.transpNoShadowMeshObj == NULL) {
             chunk.transpNoShadowMeshObj = setupMeshTexture(chunk.transpNoShadowMesh, glm::vec3(chunk.key.x * CHUNKWIDTH, 0, chunk.key.y * CHUNKWIDTH), true, false, false);
@@ -939,6 +953,10 @@ void updateMesh(chunk& chunk) {
             updateMeshTexture(chunk.transpNoShadowMeshObj, chunk.transpNoShadowMesh);
         }
         setMeshPosition(chunk.transpNoShadowMeshObj, glm::vec3(chunk.key.x * CHUNKWIDTH, 0, chunk.key.y * CHUNKWIDTH));
+    }
+    else if (chunk.transpNoShadowMeshObj != nullptr) {
+        deleteMesh(chunk.transpNoShadowMeshObj);
+        chunk.transpNoShadowMeshObj = nullptr;
     }
 
     if (!chunk.plantMesh.empty()) {
@@ -950,6 +968,10 @@ void updateMesh(chunk& chunk) {
             updateMeshTexture(chunk.plantMeshObj, chunk.plantMesh);
         }
         setMeshPosition(chunk.plantMeshObj, glm::vec3(chunk.key.x * CHUNKWIDTH, 0, chunk.key.y * CHUNKWIDTH));
+    }
+    else if (chunk.plantMeshObj != nullptr) {
+        deleteMesh(chunk.plantMeshObj);
+        chunk.plantMeshObj = nullptr;
     }
     
 }
