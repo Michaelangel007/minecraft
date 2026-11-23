@@ -20,6 +20,32 @@ enum Biome_e {
     , BIOME_NONE = -1
 };
 
+enum Face_e {
+      FACE_E // +X
+    , FACE_N // +Z
+    , FACE_W // -X
+    , FACE_S // -Z
+    , FACE_U // +Y
+    , FACE_D // -Y
+    , NUM_FACES
+    , FACE_NONE = -1
+};
+
+const char *FACE_NAME[NUM_FACES] = {
+      "E (+X)"
+    , "N (+Z)"
+    , "W (-X)"
+    , "S (-Z)"
+    , "U (+Y)"
+    , "D (-Y)"
+};
+
+const char* getFaceName(const Face_e face) {
+    if (face >= NUM_FACES)
+        return "NONE";
+    return FACE_NAME[ face ];
+}
+
 #define CHUNKWIDTH 30
 #define CHUNKHEIGHT 120
 //#define RENDER_DISTANCE 10 camera.renderDistance;
@@ -154,37 +180,49 @@ void addPlantFace(vector<float>& mesh, int ix, int iy, int iz, float ou, float o
     });
 }
 
+// Keys: BlockId, FaceId return the tile index in the texture atlas
+// NOTE: This table can be entirely optimized away if we use a sampler2DArray, and pass z == layer
+// TODO: This really should be built dynamically from the available texture blocks.
+const int BLOCK_FACE_TO_TILE[NUM_BLOCKS][NUM_FACES] = {
+      { 255, 255, 255, 255, 255, 255 } //  0: air
+    , {   0,   0,   0,   0,   0,   0 } //  1: stone
+    , {   3,   3,   3,   3,   3,   3 } //  2: dirt
+    , {   4,   4,   3,   5,   4,   4 } //  3: grass
+    , {  10,  10,  10,  10,  10,  10 } //  4: sand
+    , {  13,  13,   3,  14,  13,  13 } //  5: snowy_grass
+    , {   2,   2,   2,   2,   2,   2 } //  6: glass
+    , {   6,   6,   6,   6,   6,   6 } //  7: diamond_ore
+    , {   1,   1,   1,   1,   1,   1 } //  8: oak_planks
+    , {   8,   8,   9,   9,   8,   8 } //  9: oak_log
+    , {   7,   7,   7,   7,   7,   7 } // 10: oak_leaves
+    , {  16,  16,  17,  17,  16,  16 } // 11: cactus
+    , {  18,  18,  19,  19,  18,  18 } // 12: spruce_log
+    , {  20,  20,  20,  20,  20,  20 } // 13: spruce_leaves
+    , {  12,  12,  12,  12,  12,  12 } // 14: water
+    , {  21,  21,  21,  21,  21,  21 } // 15: short_grass
+    , {  22,  22,  22,  22,  22,  22 } // 16: poppy
+    , {  23,  23,  23,  23,  23,  23 } // 17: dandelion
+    , {  24,  24,  24,  24,  24,  24 } // 18: dead_bush
+    , {  25,  25,  25,  25,  25,  25 } // 19: sweet_berry
+    , {  27,  27,  27,  27,  27,  27 } // 20: kelp
+    , {  11,  11,  11,  11,  11,  11 } // 21: gravel
+    , {  15,  15,  15,  15,  15,  15 } // 22: coal_ore
+    , {  26,  26,  26,  26,  26,  26 } // 23: ice
+    , {  29,  29,  29,  29,  29,  29 } // 24: bedrock
+    , {  30,  30,  30,  30,  30,  30 } // 25: brain_coral
+    , {  31,  31,  31,  31,  31,  31 } // 26: tube_coral
+    , {  32,  32,  32,  32,  32,  32 } // 27: fire_coral_block
+    , {  33,  33,  33,  33,  33,  33 } // 28: tube_coral_block};
+};
+
 vector<float> getFaceUV(int block, int face) {
-    int textureCo = 0;
-    if(block == stone){ textureCo = std::vector<int>{ 0, 0, 0, 0, 0, 0 }[face];}
-    else if (block == oak_planks) { textureCo = std::vector<int>{ 1, 1, 1, 1, 1, 1 }[face]; }
-    else if (block == dirt) { textureCo = std::vector<int>{ 3, 3, 3, 3, 3, 3 }[face]; }
-    else if (block == grass) { textureCo = std::vector<int>{ 4, 4, 3, 5, 4, 4 }[face]; }
-    else if (block == oak_leaves) { textureCo = std::vector<int>{ 7, 7, 7, 7, 7, 7 }[face]; }
-    else if (block == diamond_ore) { textureCo = std::vector<int>{ 6, 6, 6, 6, 6, 6 }[face]; }
-    else if (block == glass) { textureCo = std::vector<int>{ 2, 2, 2, 2, 2, 2 }[face]; }
-    else if (block == oak_log) { textureCo = std::vector<int>{ 8, 8, 9, 9, 8, 8 }[face]; }
-    else if (block == sand) { textureCo = std::vector<int>{ 10, 10, 10, 10, 10, 10 }[face]; }
-    else if (block == water) { textureCo = std::vector<int>{ 12, 12, 12, 12, 12, 12 }[face]; }
-    else if (block == snowy_grass) { textureCo = std::vector<int>{ 13, 13, 3, 14, 13, 13 }[face]; }
-    else if (block == spruce_log) { textureCo = std::vector<int>{ 18, 18, 19, 19, 18, 18 }[face]; }
-    else if (block == spruce_leaves) { textureCo = std::vector<int>{ 20, 20, 20, 20, 20, 20 }[face]; }
-    else if (block == cactus) { textureCo = std::vector<int>{ 16, 16, 17, 17, 16, 16 }[face]; }
-    else if (block == short_grass) { textureCo = std::vector<int>{ 21, 21, 21, 21, 21, 21 }[face]; }
-    else if (block == poppy) { textureCo = std::vector<int>{ 22, 22, 22, 22, 22, 22 }[face]; }
-    else if (block == dandelion) { textureCo = std::vector<int>{ 23, 23, 23, 23, 23, 23 }[face]; }
-    else if (block == dead_bush) { textureCo = std::vector<int>{ 24, 24, 24, 24, 24, 24 }[face]; }
-    else if (block == sweet_berry) { textureCo = std::vector<int>{ 25, 25, 25, 25, 25, 25 }[face]; }
-    else if (block == kelp) { textureCo = std::vector<int>{ 27, 27, 27, 27, 27, 27 }[face]; }
-    else if (block == gravel) { textureCo = std::vector<int>{ 11, 11, 11, 11, 11, 11 }[face]; }
-    else if (block == coal_ore) { textureCo = std::vector<int>{ 15, 15, 15, 15, 15, 15 }[face]; }
-    else if (block == ice) { textureCo = std::vector<int>{ 26, 26, 26, 26, 26, 26 }[face]; }
-    else if (block == bedrock) { textureCo = std::vector<int>{ 29, 29, 29, 29, 29, 29 }[face]; }
-    else if (block == brain_coral) { textureCo = std::vector<int>{ 30, 30, 30, 30, 30, 30 }[face]; }
-    else if (block == tube_coral) { textureCo = std::vector<int>{ 31, 31, 31, 31, 31, 31 }[face]; }
-    else if (block == fire_coral_block) { textureCo = std::vector<int>{ 32, 32, 32, 32, 32, 32 }[face]; }
-    else if (block == tube_coral_block) { textureCo = std::vector<int>{ 33, 33, 33, 33, 33, 33 }[face]; }
-    
+    assert(block < NUM_BLOCKS);
+    assert(face < NUM_FACES);
+
+    assert(block > air); // Catch if air is siliently / accidently passed in
+    assert(face >= FACE_E);
+
+    int textureCo =  BLOCK_FACE_TO_TILE[ block ][ face ];
     vector<float> rez = { (float)(textureCo % textureMapWidth)/textureMapWidth,(float)(textureCo / textureMapWidth) / textureMapWidth,1.0f / textureMapWidth };
     return rez;
 }

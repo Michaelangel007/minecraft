@@ -31,6 +31,10 @@
 #define tube_coral 26
 #define fire_coral_block 27
 #define tube_coral_block 28
+enum Block_e {
+      BLOCK_AIR
+    , NUM_BLOCKS = 29
+};
 
 enum BP {//block properties
 	SOLID = 1 << 0,
