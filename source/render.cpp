@@ -481,7 +481,7 @@ void renderScene() {
         glUniform1i(glGetUniformLocation(shaderProgram, (base + ".castshadow").c_str()), (*lightList[i]).castshadow ? 1 : 0);
 
 
-        if ((*lightList[i]).castshadow) {
+        if (lightList[i]->castshadow) {
             glUniformMatrix4fv(glGetUniformLocation(shaderProgram, (base + ".lightSpaceMatrix").c_str()), 1, GL_FALSE, glm::value_ptr( getLightSpaceMatrix(lightList[i]) ));
             glUniform1i(glGetUniformLocation(shaderProgram, (base + ".PCFSize").c_str()), (*lightList[i]).PCFSize);
 
@@ -506,9 +506,9 @@ void renderScene() {
         glUniform1i(glGetUniformLocation(shaderProgram, "mat.shininess"), (*opaqueMeshList[i]).shininess);
         glUniform1f(glGetUniformLocation(shaderProgram, "mat.ambianteLightMult"), (*opaqueMeshList[i]).ambianteLightMult);
         glUniform1i(glGetUniformLocation(shaderProgram, "mat.enableTexture"), 0);
-        if ((*opaqueMeshList[i]).enableTexture) {
+        if (opaqueMeshList[i]->enableTexture) {
             glActiveTexture(GL_TEXTURE0 + TextureIndex);
-            glBindTexture(GL_TEXTURE_2D, (*opaqueMeshList[i]).texture);
+            glBindTexture(GL_TEXTURE_2D, opaqueMeshList[i]->texture);
             glUniform1i(glGetUniformLocation(shaderProgram, "mat.text"), TextureIndex);
             glUniform1i(glGetUniformLocation(shaderProgram, "mat.enableTexture"), 1);
         }
@@ -522,7 +522,7 @@ void renderScene() {
         glUniform1i(glGetUniformLocation(shaderProgram, "mat.shininess"), (*opaqueNoShadowMeshList[i]).shininess);
         glUniform1f(glGetUniformLocation(shaderProgram, "mat.ambianteLightMult"), (*opaqueNoShadowMeshList[i]).ambianteLightMult);
         glUniform1i(glGetUniformLocation(shaderProgram, "mat.enableTexture"), 0);
-        if ((*opaqueNoShadowMeshList[i]).enableTexture) {
+        if (opaqueNoShadowMeshList[i]->enableTexture) {
             glActiveTexture(GL_TEXTURE0 + TextureIndex);
             glBindTexture(GL_TEXTURE_2D, (*opaqueNoShadowMeshList[i]).texture);
             glUniform1i(glGetUniformLocation(shaderProgram, "mat.text"), TextureIndex);
@@ -543,7 +543,7 @@ void renderScene() {
         glUniform1i(glGetUniformLocation(shaderProgram, "mat.shininess"), (*plantMeshList[i]).shininess);
         glUniform1f(glGetUniformLocation(shaderProgram, "mat.ambianteLightMult"), (*plantMeshList[i]).ambianteLightMult);
         glUniform1i(glGetUniformLocation(shaderProgram, "mat.enableTexture"), 0);
-        if ((*plantMeshList[i]).enableTexture) {
+        if (plantMeshList[i]->enableTexture) {
             glActiveTexture(GL_TEXTURE0 + TextureIndex);
             glBindTexture(GL_TEXTURE_2D, (*plantMeshList[i]).texture);
             glUniform1i(glGetUniformLocation(shaderProgram, "mat.text"), TextureIndex);
@@ -561,7 +561,7 @@ void renderScene() {
         glUniform1i(glGetUniformLocation(shaderProgram, "mat.shininess"), (*transpMeshList[i]).shininess);
         glUniform1f(glGetUniformLocation(shaderProgram, "mat.ambianteLightMult"), (*transpMeshList[i]).ambianteLightMult);
         glUniform1i(glGetUniformLocation(shaderProgram, "mat.enableTexture"), 0);
-        if ((*transpMeshList[i]).enableTexture) {
+        if (transpMeshList[i]->enableTexture) {
             glActiveTexture(GL_TEXTURE0 + TextureIndex);
             glBindTexture(GL_TEXTURE_2D, (*transpMeshList[i]).texture);
             glUniform1i(glGetUniformLocation(shaderProgram, "mat.text"), TextureIndex);
@@ -577,7 +577,7 @@ void renderScene() {
         glUniform1i(glGetUniformLocation(shaderProgram, "mat.shininess"), (*transpNoShadowMeshList[i]).shininess);
         glUniform1f(glGetUniformLocation(shaderProgram, "mat.ambianteLightMult"), (*transpNoShadowMeshList[i]).ambianteLightMult);
         glUniform1i(glGetUniformLocation(shaderProgram, "mat.enableTexture"), 0);
-        if ((*transpNoShadowMeshList[i]).enableTexture) {
+        if (transpNoShadowMeshList[i]->enableTexture) {
             glActiveTexture(GL_TEXTURE0 + TextureIndex);
             glBindTexture(GL_TEXTURE_2D, (*transpNoShadowMeshList[i]).texture);
             glUniform1i(glGetUniformLocation(shaderProgram, "mat.text"), TextureIndex);
