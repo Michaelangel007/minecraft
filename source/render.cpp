@@ -11,14 +11,13 @@
 #include <stb_image.h>
 #include "render.hpp"
 
-std::vector<std::string> SkyBoxFaces{
-
-    "data/skybox/px.jpg",
-    "data/skybox/nx.jpg",
-    "data/skybox/py.jpg",
-    "data/skybox/ny.jpg",
-    "data/skybox/pz.jpg",
-    "data/skybox/nz.jpg"
+std::vector<std::string> SkyBoxFaces {
+    "data/skybox/px.jpg", // right
+    "data/skybox/nx.jpg", // left
+    "data/skybox/py.jpg", // top
+    "data/skybox/ny.jpg", // bottom
+    "data/skybox/pz.jpg", // front
+    "data/skybox/nz.jpg"  // back
 };
 
 const char* shaderPathSkyBoxVert = "data/shaders/SkyboxVertex.glsl";
