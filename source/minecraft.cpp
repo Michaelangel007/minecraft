@@ -31,7 +31,7 @@ float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
 bool flyMode = true;
-float playerHeight = 1.8;
+float playerHeight = 1.8f;
 int waterHeight = 25;
 int seed = 1;
 
@@ -1373,7 +1373,7 @@ void processKey() {
             dPos += glm::normalize(glm::vec3(camera.Right.x, 0.0f, camera.Right.z)) * -camera.MovementSpeed * deltaTime;
         }
 
-        float largeur = 0.1;
+        float largeur = 0.1f;
         //glm::ivec3 blockPos = glm::ivec3(floor(camera.Position.x), floor(camera.Position.y), floor(camera.Position.z));
         bool leftBlockFree = true;
         bool rightBlockFree = true;
@@ -1531,12 +1531,12 @@ int main() {
 
     Light* sun = createLight(DIRECTIONAL, true);
     setLightColor(sun, glm::vec3(1.0, 1.0, 1.0));
-    setLightIntensity(sun, 0.62);
+    setLightIntensity(sun, 0.62f);
     setLightDirection(sun, glm::vec3(-3.8f, 7.5f, -5.0f));
 
     Light* skyLight = createLight(DIRECTIONAL, false);
     setLightColor(skyLight, glm::vec3(0.5, 0.8, 0.9));
-    setLightIntensity(skyLight, 0.2);
+    setLightIntensity(skyLight, 0.2f);
     setLightDirection(skyLight, glm::vec3(0.0f, 1.0f, 0.0f));
 
     while (shouldCloseTheApp()) {

@@ -205,7 +205,7 @@ Mesh* setupMeshTexture(std::vector<float> vertices, const glm::vec3& position, b
     mesh->model = glm::mat4(glm::translate(glm::mat4(1.0f), position));
     mesh->color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
     mesh->shininess = 32;
-    mesh->ambianteLightMult = 0.8;
+    mesh->ambianteLightMult = 0.8f;
     mesh->enableTexture = true;
 	if (plant) plantMeshList.push_back(mesh);
     else if (!transp && shadow) opaqueMeshList.push_back(mesh);
