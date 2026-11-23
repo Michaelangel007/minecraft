@@ -428,12 +428,12 @@ void renderScene() {
             for (int i = 0; i < opaqueMeshList.size(); i++) {
                 glUniformMatrix4fv(glGetUniformLocation(shaderProgramDepth, "model"), 1, GL_FALSE, glm::value_ptr(glm::translate((*opaqueMeshList[i]).model, -camera.Position)));
                 glBindVertexArray((*opaqueMeshList[i]).VAO);
-                glDrawArrays(GL_TRIANGLES, 0, (*opaqueMeshList[i]).vertices.size() / 3);
+                glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(opaqueMeshList[i]->vertices.size() / 3));
             }
             for (int i = 0; i < transpMeshList.size(); i++) {
                 glUniformMatrix4fv(glGetUniformLocation(shaderProgramDepth, "model"), 1, GL_FALSE, glm::value_ptr(glm::translate((*transpMeshList[i]).model, -camera.Position)));
                 glBindVertexArray((*transpMeshList[i]).VAO);
-                glDrawArrays(GL_TRIANGLES, 0, (*transpMeshList[i]).vertices.size() / 3);
+                glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(transpMeshList[i]->vertices.size() / 3));
             }
             for (int i = 0; i < plantMeshList.size(); i++) {
                 glActiveTexture(GL_TEXTURE0 + 0);
@@ -443,7 +443,7 @@ void renderScene() {
 
                 glUniformMatrix4fv(glGetUniformLocation(shaderProgramDepth, "model"), 1, GL_FALSE, glm::value_ptr(glm::translate((*plantMeshList[i]).model, -camera.Position)));
                 glBindVertexArray((*plantMeshList[i]).VAO);
-                glDrawArrays(GL_TRIANGLES, 0, (*plantMeshList[i]).vertices.size() / 3);
+                glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(plantMeshList[i]->vertices.size() / 3));
             }
         }
     }
@@ -496,7 +496,7 @@ void renderScene() {
             glUniform1i(glGetUniformLocation(shaderProgram, (base + ".shadowIndex").c_str()), -1);
         }
     }
-    glUniform1i(glGetUniformLocation(shaderProgram, "numLights"), lightList.size());
+    glUniform1i(glGetUniformLocation(shaderProgram, "numLights"), static_cast<GLint>(lightList.size()));
 
     const int TextureIndex = shadowIndex;
 
@@ -514,7 +514,7 @@ void renderScene() {
         }
         glUniform1i(glGetUniformLocation(shaderProgram, "enableWind"), 0);
         glBindVertexArray((*opaqueMeshList[i]).VAO);
-        glDrawArrays(GL_TRIANGLES, 0, (*opaqueMeshList[i]).vertices.size() / 3);
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(opaqueMeshList[i]->vertices.size() / 3));
     }
     for (int i = 0; i < opaqueNoShadowMeshList.size(); i++) {
         glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(glm::translate((*opaqueNoShadowMeshList[i]).model, -camera.Position)));
@@ -530,11 +530,11 @@ void renderScene() {
         }
         glUniform1i(glGetUniformLocation(shaderProgram, "enableWind"), 0);
         glBindVertexArray((*opaqueNoShadowMeshList[i]).VAO);
-        glDrawArrays(GL_TRIANGLES, 0, (*opaqueNoShadowMeshList[i]).vertices.size() / 3);
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(opaqueNoShadowMeshList[i]->vertices.size() / 3));
     }
     for (int i = 0; i < plantMeshList.size(); i++) {
         glUniform1i(glGetUniformLocation(shaderProgram, "enableWind"), 1);
-        glUniform1f(glGetUniformLocation(shaderProgram, "time"), glfwGetTime());
+        glUniform1f(glGetUniformLocation(shaderProgram, "time"), static_cast<GLfloat>(glfwGetTime()));
         glUniform1f(glGetUniformLocation(shaderProgram, "windStrength"), 0.4f);
         glUniform3f(glGetUniformLocation(shaderProgram, "windDirection"), 1.0f, 0.0f, 0.5f);
 
@@ -550,7 +550,7 @@ void renderScene() {
             glUniform1i(glGetUniformLocation(shaderProgram, "mat.enableTexture"), 1);
         }
         glBindVertexArray((*plantMeshList[i]).VAO);
-        glDrawArrays(GL_TRIANGLES, 0, (*plantMeshList[i]).vertices.size() / 3);
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(plantMeshList[i]->vertices.size() / 3));
     }
 
 
@@ -569,7 +569,7 @@ void renderScene() {
         }
         glUniform1i(glGetUniformLocation(shaderProgram, "enableWind"), 0);
         glBindVertexArray((*transpMeshList[i]).VAO);
-        glDrawArrays(GL_TRIANGLES, 0, (*transpMeshList[i]).vertices.size() / 3);
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(transpMeshList[i]->vertices.size() / 3));
     }
     for (int i = 0; i < transpNoShadowMeshList.size(); i++) {
         glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(glm::translate((*transpNoShadowMeshList[i]).model, -camera.Position)));
@@ -585,7 +585,7 @@ void renderScene() {
         }
         glUniform1i(glGetUniformLocation(shaderProgram, "enableWind"), 0);
         glBindVertexArray((*transpNoShadowMeshList[i]).VAO);
-        glDrawArrays(GL_TRIANGLES, 0, (*transpNoShadowMeshList[i]).vertices.size() / 3);
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(transpNoShadowMeshList[i]->vertices.size() / 3));
     }
     glDepthMask(GL_TRUE);
 
