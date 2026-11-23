@@ -1,38 +1,36 @@
 #pragma once
 #include <iostream>
 
-#define air 0
-#define stone 1
-#define dirt 2
-#define grass 3
-#define sand 4
-#define snowy_grass 5
-#define glass 6
-#define diamond_ore 7
-#define oak_planks 8
-#define oak_log 9
-#define oak_leaves 10
-#define cactus 11
-#define spruce_log 12
-#define spruce_leaves 13
-#define water 14
-#define short_grass 15
-#define poppy 16
-#define dandelion 17
-#define dead_bush 18
-#define sweet_berry 19
-#define kelp 20
-#define gravel 21
-
-#define coal_ore 22
-#define ice 23
-#define bedrock 24
-#define brain_coral 25
-#define tube_coral 26
-#define fire_coral_block 27
-#define tube_coral_block 28
 enum Block_e {
       BLOCK_AIR
+    , BLOCK_STONE
+    , BLOCK_DIRT
+    , BLOCK_GRASS
+    , BLOCK_SAND
+    , BLOCK_GRASS_SNOWY
+    , BLOCK_GLASS
+    , BLOCK_ORE_DIAMOND
+    , BLOCK_OAK_PLANK
+    , BLOCK_OAK_LOG
+    , BLOCK_OAK_LEAVES
+    , BLOCK_PLANT_CACTUS
+    , BLOCK_SPRUCE_LOG
+    , BLOCK_SPRUCE_LEAVES
+    , BLOCK_WATER
+    , BLOCK_GRASS_SHORT
+    , BLOCK_FLOWER_POPPY
+    , BLOCK_FLOWER_DANDELION
+    , BLOCK_DEAD_BUSH
+    , BLOCK_PLANT_SWEET_BERRY
+    , BLOCK_PLANT_KELP // Technically not a plant, but kindgom Protista, a stramenopile
+    , BLOCK_GRAVEL
+    , BLOCK_ORE_COAL
+    , BLOCK_ICE
+    , BLOCK_BEDROCK
+    , BLOCK_CORAL_BRAIN_FAN  // Pink
+    , BLOCK_CORAL_TUBE_FAN   // Blue
+    , BLOCK_CORAL_FIRE_BLOCK // Red
+    , BLOCK_CORAL_TUBE_BLOCK // Blue
     , NUM_BLOCKS = 29
 };
 
