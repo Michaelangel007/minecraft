@@ -69,12 +69,13 @@ float playerHeight = 1.8f;
 int waterHeight = 25;
 int seed = 1;
 
-#define XYZ_INT_TO_FLOAT \
+#define XYZ_INT_TO_FLOAT                    \
     const float x = static_cast<float>(ix); \
     const float y = static_cast<float>(iy); \
-    const float z = static_cast<float>(iz);
+    const float z = static_cast<float>(iz); \
+    const float s = 1.0f/static_cast<float>(textureMapWidth);
 
-void addTopFace(vector<float>& mesh, int ix, int iy, int iz, float ou, float ov, float s) {
+void addTopFace(vector<float>& mesh, int ix, int iy, int iz, float ou, float ov) {
     XYZ_INT_TO_FLOAT
     mesh.insert(mesh.end(), {
         x, y, z, ou, ov + s,
@@ -86,7 +87,7 @@ void addTopFace(vector<float>& mesh, int ix, int iy, int iz, float ou, float ov,
         });
 }
 
-void addBottomFace(vector<float>& mesh, int ix, int iy, int iz, float ou, float ov, float s) {
+void addBottomFace(vector<float>& mesh, int ix, int iy, int iz, float ou, float ov) {
     XYZ_INT_TO_FLOAT
     mesh.insert(mesh.end(), {
         x + 1, y, z, ou, ov + s,
@@ -98,7 +99,7 @@ void addBottomFace(vector<float>& mesh, int ix, int iy, int iz, float ou, float 
         });
 }
 
-void addXPosFace(vector<float>& mesh, int ix, int iy, int iz, float ou, float ov, float s) {
+void addXPosFace(vector<float>& mesh, int ix, int iy, int iz, float ou, float ov) {
     XYZ_INT_TO_FLOAT
     mesh.insert(mesh.end(), {
         x, y, z, ou, ov + s,
@@ -110,7 +111,7 @@ void addXPosFace(vector<float>& mesh, int ix, int iy, int iz, float ou, float ov
         });
 }
 
-void addXNegFace(vector<float>& mesh, int ix, int iy, int iz, float ou, float ov, float s) {
+void addXNegFace(vector<float>& mesh, int ix, int iy, int iz, float ou, float ov) {
     XYZ_INT_TO_FLOAT
     mesh.insert(mesh.end(), {
         x, y, z + 1, ou, ov + s,
@@ -122,7 +123,7 @@ void addXNegFace(vector<float>& mesh, int ix, int iy, int iz, float ou, float ov
         });
 }
 
-void addZPosFace(vector<float>& mesh, int ix, int iy, int iz, float ou, float ov, float s) {
+void addZPosFace(vector<float>& mesh, int ix, int iy, int iz, float ou, float ov) {
     XYZ_INT_TO_FLOAT
     mesh.insert(mesh.end(), {
         x, y, z, ou, ov + s,
@@ -134,7 +135,7 @@ void addZPosFace(vector<float>& mesh, int ix, int iy, int iz, float ou, float ov
         });
 }
 
-void addZNegFace(vector<float>& mesh, int ix, int iy, int iz, float ou, float ov, float s) {
+void addZNegFace(vector<float>& mesh, int ix, int iy, int iz, float ou, float ov) {
     XYZ_INT_TO_FLOAT
     mesh.insert(mesh.end(), {
         x + 1, y, z, ou, ov + s,
@@ -146,7 +147,7 @@ void addZNegFace(vector<float>& mesh, int ix, int iy, int iz, float ou, float ov
         });
 }
 
-void addPlantFace(vector<float>& mesh, int ix, int iy, int iz, float ou, float ov, float s) {
+void addPlantFace(vector<float>& mesh, int ix, int iy, int iz, float ou, float ov) {
     XYZ_INT_TO_FLOAT
     mesh.insert(mesh.end(), {
         x-1, y, z, ou, ov + s,
@@ -218,7 +219,12 @@ const int BLOCK_FACE_TO_TILE[NUM_BLOCKS][NUM_FACES] = {
     , {  33,  33,  33,  33,  33,  33 } // 28: tube_coral_block BLOCK
 };
 
-vector<float> getFaceUV(int block, Face_e face) {
+struct FaceUV_t {
+    float u;
+    float v;
+};
+
+FaceUV_t getFaceUV(int block, Face_e face) {
     assert(block < NUM_BLOCKS);
     assert(face < NUM_FACES);
 
@@ -226,8 +232,11 @@ vector<float> getFaceUV(int block, Face_e face) {
     assert(face >= FACE_E);
 
     int textureCo =  BLOCK_FACE_TO_TILE[ block ][ face ];
-    vector<float> rez = { (float)(textureCo % textureMapWidth)/textureMapWidth,(float)(textureCo / textureMapWidth) / textureMapWidth,1.0f / textureMapWidth };
-    return rez;
+    FaceUV_t uv = {
+        (float)(textureCo % textureMapWidth) / textureMapWidth,
+        (float)(textureCo / textureMapWidth) / textureMapWidth,
+    };
+    return uv;
 }
 
 typedef struct ChunkKey {
@@ -653,36 +662,36 @@ void updateMesh(chunk& chunk) {
         southChunk = &(southIt->second);
     }
 
+    FaceUV_t faceUV;
+
     for (int i = 0; i < CHUNKWIDTH; ++i) {
         for (int j = 0; j < CHUNKHEIGHT; ++j) {
             for (int k = 0; k < CHUNKWIDTH; ++k) {
                 if (chunk.blocks[i][j][k] == BLOCK_AIR) continue;
                 if (hasProp(chunk.blocks[i][j][k], HAS_WIND_SWAY)) {
                     if (hasProp(chunk.blocks[i][j][k], IS_CROSS_SHAPED)) {
-                        vector<float> faceUV = getFaceUV(chunk.blocks[i][j][k], FACE_E);
-                        addPlantFace(chunk.plantMesh, i + 1, j, k, faceUV[0], faceUV[1], faceUV[2]);
+                        faceUV = getFaceUV(chunk.blocks[i][j][k], FACE_E);
+                        addPlantFace(chunk.plantMesh, i + 1, j, k, faceUV.u, faceUV.v);
                         continue;
                     }
                     else {
-                        vector<float> faceUV;
-
                         faceUV = getFaceUV(chunk.blocks[i][j][k], FACE_E);
-                        addXNegFace(chunk.plantMesh, i, j, k, faceUV[0], faceUV[1], faceUV[2]);
+                        addXNegFace(chunk.plantMesh, i, j, k, faceUV.u, faceUV.v);
 
                         faceUV = getFaceUV(chunk.blocks[i][j][k], FACE_W);
-                        addXPosFace(chunk.plantMesh, i + 1, j, k, faceUV[0], faceUV[1], faceUV[2]);
+                        addXPosFace(chunk.plantMesh, i + 1, j, k, faceUV.u, faceUV.v);
 
                         faceUV = getFaceUV(chunk.blocks[i][j][k], FACE_D);
-                        addBottomFace(chunk.plantMesh, i, j, k, faceUV[0], faceUV[1], faceUV[2]);
+                        addBottomFace(chunk.plantMesh, i, j, k, faceUV.u, faceUV.v);
 
                         faceUV = getFaceUV(chunk.blocks[i][j][k], FACE_U);
-                        addTopFace(chunk.plantMesh, i, j + 1, k, faceUV[0], faceUV[1], faceUV[2]);
+                        addTopFace(chunk.plantMesh, i, j + 1, k, faceUV.u, faceUV.v);
 
                         faceUV = getFaceUV(chunk.blocks[i][j][k], FACE_S);
-                        addZNegFace(chunk.plantMesh, i, j, k, faceUV[0], faceUV[1], faceUV[2]);
+                        addZNegFace(chunk.plantMesh, i, j, k, faceUV.u, faceUV.v);
 
                         faceUV = getFaceUV(chunk.blocks[i][j][k], FACE_N);
-                        addZPosFace(chunk.plantMesh, i, j, k+1, faceUV[0], faceUV[1], faceUV[2]);
+                        addZPosFace(chunk.plantMesh, i, j, k+1, faceUV.u, faceUV.v);
 
                         continue;
                     }
@@ -696,24 +705,24 @@ void updateMesh(chunk& chunk) {
                     bool bPropTransparent = hasWestChunk && hasProp(westChunk->blocks[CHUNKWIDTH - 1][j][k], IS_SEE_THROUGH);
                     bool bPropDoubleSided = hasProp(chunk.blocks[i][j][k], IS_DOUBLESIDED);
                     if (bPropTransparent && (westChunk->blocks[CHUNKWIDTH - 1][j][k] != chunk.blocks[i][j][k] || bPropDoubleSided)) {
-                        vector<float> faceUV = getFaceUV(chunk.blocks[i][j][k], FACE_E);
+                        faceUV = getFaceUV(chunk.blocks[i][j][k], FACE_E);
                         if (bPropShadow) {
                             if (bPropOpaque) {
-                                addXNegFace(chunk.opaqueMesh, i, j, k, faceUV[0], faceUV[1], faceUV[2]);
+                                addXNegFace(chunk.opaqueMesh, i, j, k, faceUV.u, faceUV.v);
                             }
                             else {
                                 if (westChunk->blocks[CHUNKWIDTH - 1][j][k] == BLOCK_AIR) {
-                                    addXNegFace(chunk.transpMesh, i, j, k, faceUV[0], faceUV[1], faceUV[2]);
+                                    addXNegFace(chunk.transpMesh, i, j, k, faceUV.u, faceUV.v);
                                 }
                             }
                         }
                         else {
                             if (bPropOpaque) {
-                                addXNegFace(chunk.opaqueNoShadowMesh, i, j, k, faceUV[0], faceUV[1], faceUV[2]);
+                                addXNegFace(chunk.opaqueNoShadowMesh, i, j, k, faceUV.u, faceUV.v);
                             }
                             else {
                                 if (westChunk->blocks[CHUNKWIDTH - 1][j][k] == BLOCK_AIR) {
-                                    addXNegFace(chunk.transpNoShadowMesh, i, j, k, faceUV[0], faceUV[1], faceUV[2]);
+                                    addXNegFace(chunk.transpNoShadowMesh, i, j, k, faceUV.u, faceUV.v);
                                 }
                             }
                         }
@@ -723,24 +732,24 @@ void updateMesh(chunk& chunk) {
                     bool bPropTransparent = hasProp(chunk.blocks[i - 1][j][k], IS_SEE_THROUGH);
                     bool bPropDoubleSided = hasProp(chunk.blocks[i][j][k], IS_DOUBLESIDED);
                     if (bPropTransparent && (chunk.blocks[i - 1][j][k] != chunk.blocks[i][j][k] || bPropDoubleSided)) {
-                        vector<float> faceUV = getFaceUV(chunk.blocks[i][j][k], FACE_E);
+                        faceUV = getFaceUV(chunk.blocks[i][j][k], FACE_E);
                         if (bPropShadow) {
                             if (bPropOpaque) {
-                                addXNegFace(chunk.opaqueMesh, i, j, k, faceUV[0], faceUV[1], faceUV[2]);
+                                addXNegFace(chunk.opaqueMesh, i, j, k, faceUV.u, faceUV.v);
                             }
                             else {
                                 if (chunk.blocks[i - 1][j][k] == BLOCK_AIR) {
-                                    addXNegFace(chunk.transpMesh, i, j, k, faceUV[0], faceUV[1], faceUV[2]);
+                                    addXNegFace(chunk.transpMesh, i, j, k, faceUV.u, faceUV.v);
                                 }
                             }
                         }
                         else {
                             if (bPropOpaque) {
-                                addXNegFace(chunk.opaqueNoShadowMesh, i, j, k, faceUV[0], faceUV[1], faceUV[2]);
+                                addXNegFace(chunk.opaqueNoShadowMesh, i, j, k, faceUV.u, faceUV.v);
                             }
                             else {
                                 if (chunk.blocks[i - 1][j][k] == BLOCK_AIR) {
-                                    addXNegFace(chunk.transpNoShadowMesh, i, j, k, faceUV[0], faceUV[1], faceUV[2]);
+                                    addXNegFace(chunk.transpNoShadowMesh, i, j, k, faceUV.u, faceUV.v);
                                 }
                             }
                         }
@@ -752,24 +761,24 @@ void updateMesh(chunk& chunk) {
                     bool bPropTransparent = hasEastChunk && hasProp(eastChunk->blocks[0][j][k], IS_SEE_THROUGH);
                     bool bPropDoubleSided = hasProp(chunk.blocks[i][j][k], IS_DOUBLESIDED);
                     if (bPropTransparent && (eastChunk->blocks[0][j][k] != chunk.blocks[i][j][k] || bPropDoubleSided)) {
-                        vector<float> faceUV = getFaceUV(chunk.blocks[i][j][k], FACE_W);
+                        faceUV = getFaceUV(chunk.blocks[i][j][k], FACE_W);
                         if (bPropShadow) {
                             if (bPropOpaque) {
-                                addXPosFace(chunk.opaqueMesh, i + 1, j, k, faceUV[0], faceUV[1], faceUV[2]);
+                                addXPosFace(chunk.opaqueMesh, i + 1, j, k, faceUV.u, faceUV.v);
                             }
                             else {
                                 if (eastChunk->blocks[0][j][k] == BLOCK_AIR) {
-                                    addXPosFace(chunk.transpMesh, i + 1, j, k, faceUV[0], faceUV[1], faceUV[2]);
+                                    addXPosFace(chunk.transpMesh, i + 1, j, k, faceUV.u, faceUV.v);
                                 }
                             }
                         }
                         else {
                             if (bPropOpaque) {
-                                addXPosFace(chunk.opaqueNoShadowMesh, i + 1, j, k, faceUV[0], faceUV[1], faceUV[2]);
+                                addXPosFace(chunk.opaqueNoShadowMesh, i + 1, j, k, faceUV.u, faceUV.v);
                             }
                             else {
                                 if (eastChunk->blocks[0][j][k] == BLOCK_AIR) {
-                                    addXPosFace(chunk.transpNoShadowMesh, i + 1, j, k, faceUV[0], faceUV[1], faceUV[2]);
+                                    addXPosFace(chunk.transpNoShadowMesh, i + 1, j, k, faceUV.u, faceUV.v);
                                 }
                             }
                         }
@@ -781,24 +790,24 @@ void updateMesh(chunk& chunk) {
                     bool bPropTransparent = hasProp(chunk.blocks[i + 1][j][k], IS_SEE_THROUGH);
                     bool bPropDoubleSided = hasProp(chunk.blocks[i][j][k], IS_DOUBLESIDED);
                     if (bPropTransparent && (chunk.blocks[i + 1][j][k] != chunk.blocks[i][j][k] || bPropDoubleSided)) {
-                        vector<float> faceUV = getFaceUV(chunk.blocks[i][j][k], FACE_W);
+                        faceUV = getFaceUV(chunk.blocks[i][j][k], FACE_W);
                         if (bPropShadow) {
                             if (bPropOpaque) {
-                                addXPosFace(chunk.opaqueMesh, i + 1, j, k, faceUV[0], faceUV[1], faceUV[2]);
+                                addXPosFace(chunk.opaqueMesh, i + 1, j, k, faceUV.u, faceUV.v);
                             }
                             else {
                                 if (chunk.blocks[i + 1][j][k] == BLOCK_AIR) {
-                                    addXPosFace(chunk.transpMesh, i + 1, j, k, faceUV[0], faceUV[1], faceUV[2]);
+                                    addXPosFace(chunk.transpMesh, i + 1, j, k, faceUV.u, faceUV.v);
                                 }
                             }
                         }
                         else {
                             if (bPropOpaque) {
-                                addXPosFace(chunk.opaqueNoShadowMesh, i + 1, j, k, faceUV[0], faceUV[1], faceUV[2]);
+                                addXPosFace(chunk.opaqueNoShadowMesh, i + 1, j, k, faceUV.u, faceUV.v);
                             }
                             else {
                                 if (chunk.blocks[i + 1][j][k] == BLOCK_AIR) {
-                                    addXPosFace(chunk.transpNoShadowMesh, i + 1, j, k, faceUV[0], faceUV[1], faceUV[2]);
+                                    addXPosFace(chunk.transpNoShadowMesh, i + 1, j, k, faceUV.u, faceUV.v);
                                 }
                             }
                         }
@@ -809,34 +818,34 @@ void updateMesh(chunk& chunk) {
                 if (j == 0) {//face vers le bas, inutile
                     /*vector<float> faceUV = getFaceUV(chunk.blocks[i][j][k], FACE_D);
                     if (chunk.blocks[i][j][k] >= 0) {
-                        //addBottomFace(chunk.mesh, i, j, k, faceUV[0], faceUV[1], faceUV[2]);
+                        //addBottomFace(chunk.mesh, i, j, k, faceUV.u, faceUV.v, faceUV[2]);
                     }
                     else {
-                        //addBottomFace(chunk.mesh, i, j, k, faceUV[0], faceUV[1], faceUV[2]);
+                        //addBottomFace(chunk.mesh, i, j, k, faceUV.u, faceUV.v, faceUV[2]);
                     }*/
                 }
                 else {
                     bool bPropTransparent = hasProp(chunk.blocks[i][j - 1][k], IS_SEE_THROUGH);
                     bool bPropDoubleSided = hasProp(chunk.blocks[i][j][k], IS_DOUBLESIDED);
                     if (bPropTransparent && (chunk.blocks[i][j - 1][k] != chunk.blocks[i][j][k] || bPropDoubleSided)) {
-                        vector<float> faceUV = getFaceUV(chunk.blocks[i][j][k], FACE_D);
+                        faceUV = getFaceUV(chunk.blocks[i][j][k], FACE_D);
                         if (bPropShadow) {
                             if (bPropOpaque) {
-                                addBottomFace(chunk.opaqueMesh, i, j, k, faceUV[0], faceUV[1], faceUV[2]);
+                                addBottomFace(chunk.opaqueMesh, i, j, k, faceUV.u, faceUV.v);
                             }
                             else {
                                 if (chunk.blocks[i][j - 1][k] == BLOCK_AIR) {
-                                    addBottomFace(chunk.transpMesh, i, j, k, faceUV[0], faceUV[1], faceUV[2]);
+                                    addBottomFace(chunk.transpMesh, i, j, k, faceUV.u, faceUV.v);
                                 }
                             }
                         }
                         else {
                             if (bPropOpaque) {
-                                addBottomFace(chunk.opaqueNoShadowMesh, i, j, k, faceUV[0], faceUV[1], faceUV[2]);
+                                addBottomFace(chunk.opaqueNoShadowMesh, i, j, k, faceUV.u, faceUV.v);
                             }
                             else {
                                 if (chunk.blocks[i][j - 1][k] == BLOCK_AIR) {
-                                    addBottomFace(chunk.transpNoShadowMesh, i, j, k, faceUV[0], faceUV[1], faceUV[2]);
+                                    addBottomFace(chunk.transpNoShadowMesh, i, j, k, faceUV.u, faceUV.v);
                                 }
                             }
                         }
@@ -845,21 +854,21 @@ void updateMesh(chunk& chunk) {
 
                 //TOP FACE
                 if (j == CHUNKHEIGHT - 1) {
-                    vector<float> faceUV = getFaceUV(chunk.blocks[i][j][k], FACE_U);
+                    faceUV = getFaceUV(chunk.blocks[i][j][k], FACE_U);
                     if (bPropShadow) {
                         if (bPropOpaque) {
-                            addTopFace(chunk.opaqueMesh, i, j + 1, k, faceUV[0], faceUV[1], faceUV[2]);
+                            addTopFace(chunk.opaqueMesh, i, j + 1, k, faceUV.u, faceUV.v);
                         }
                         else {
-                            addTopFace(chunk.transpMesh, i, j + 1, k, faceUV[0], faceUV[1], faceUV[2]);
+                            addTopFace(chunk.transpMesh, i, j + 1, k, faceUV.u, faceUV.v);
                         }
                     }
                     else {
                         if (bPropOpaque) {
-                            addTopFace(chunk.opaqueNoShadowMesh, i, j + 1, k, faceUV[0], faceUV[1], faceUV[2]);
+                            addTopFace(chunk.opaqueNoShadowMesh, i, j + 1, k, faceUV.u, faceUV.v);
                         }
                         else {
-                            addTopFace(chunk.transpNoShadowMesh, i, j + 1, k, faceUV[0], faceUV[1], faceUV[2]);
+                            addTopFace(chunk.transpNoShadowMesh, i, j + 1, k, faceUV.u, faceUV.v);
                         }
                     }
                 }
@@ -867,24 +876,24 @@ void updateMesh(chunk& chunk) {
                     bool bPropTransparent = hasProp(chunk.blocks[i][j + 1][k], IS_SEE_THROUGH);
                     bool bPropDoubleSided = hasProp(chunk.blocks[i][j][k], IS_DOUBLESIDED);
                     if (bPropTransparent && (chunk.blocks[i][j + 1][k] != chunk.blocks[i][j][k] || bPropDoubleSided)) {
-                        vector<float> faceUV = getFaceUV(chunk.blocks[i][j][k], FACE_U);
+                        faceUV = getFaceUV(chunk.blocks[i][j][k], FACE_U);
                         if (bPropShadow) {
                             if (bPropOpaque) {
-                                addTopFace(chunk.opaqueMesh, i, j + 1, k, faceUV[0], faceUV[1], faceUV[2]);
+                                addTopFace(chunk.opaqueMesh, i, j + 1, k, faceUV.u, faceUV.v);
                             }
                             else {
                                 if (chunk.blocks[i][j + 1][k] == BLOCK_AIR) {
-                                    addTopFace(chunk.transpMesh, i, j + 1, k, faceUV[0], faceUV[1], faceUV[2]);
+                                    addTopFace(chunk.transpMesh, i, j + 1, k, faceUV.u, faceUV.v);
                                 }
                             }
                         }
                         else {
                             if (bPropOpaque) {
-                                addTopFace(chunk.opaqueNoShadowMesh, i, j + 1, k, faceUV[0], faceUV[1], faceUV[2]);
+                                addTopFace(chunk.opaqueNoShadowMesh, i, j + 1, k, faceUV.u, faceUV.v);
                             }
                             else {
                                 if (chunk.blocks[i][j + 1][k] == BLOCK_AIR) {
-                                    addTopFace(chunk.transpNoShadowMesh, i, j + 1, k, faceUV[0], faceUV[1], faceUV[2]);
+                                    addTopFace(chunk.transpNoShadowMesh, i, j + 1, k, faceUV.u, faceUV.v);
                                 }
                             }
                         }
@@ -896,24 +905,24 @@ void updateMesh(chunk& chunk) {
                     bool bPropTransparent = hasNorthChunk && hasProp(northChunk->blocks[i][j][CHUNKWIDTH - 1], IS_SEE_THROUGH);
                     bool bPropDoubleSided = hasProp(chunk.blocks[i][j][k], IS_DOUBLESIDED);
                     if (bPropTransparent && (northChunk->blocks[i][j][CHUNKWIDTH - 1] != chunk.blocks[i][j][k] || bPropDoubleSided)) {
-                        vector<float> faceUV = getFaceUV(chunk.blocks[i][j][k], FACE_S);
+                        faceUV = getFaceUV(chunk.blocks[i][j][k], FACE_S);
                         if (bPropShadow) {
                             if (bPropOpaque) {
-                                addZNegFace(chunk.opaqueMesh, i, j, k, faceUV[0], faceUV[1], faceUV[2]);
+                                addZNegFace(chunk.opaqueMesh, i, j, k, faceUV.u, faceUV.v);
                             }
                             else {
                                 if (northChunk->blocks[i][j][CHUNKWIDTH - 1] == BLOCK_AIR) {
-                                    addZNegFace(chunk.transpMesh, i, j, k, faceUV[0], faceUV[1], faceUV[2]);
+                                    addZNegFace(chunk.transpMesh, i, j, k, faceUV.u, faceUV.v);
                                 }
                             }
                         }
                         else {
                             if (bPropOpaque) {
-                                addZNegFace(chunk.opaqueNoShadowMesh, i, j, k, faceUV[0], faceUV[1], faceUV[2]);
+                                addZNegFace(chunk.opaqueNoShadowMesh, i, j, k, faceUV.u, faceUV.v);
                             }
                             else {
                                 if (northChunk->blocks[i][j][CHUNKWIDTH - 1] == BLOCK_AIR) {
-                                    addZNegFace(chunk.transpNoShadowMesh, i, j, k, faceUV[0], faceUV[1], faceUV[2]);
+                                    addZNegFace(chunk.transpNoShadowMesh, i, j, k, faceUV.u, faceUV.v);
                                 }
                             }
                         }
@@ -923,24 +932,24 @@ void updateMesh(chunk& chunk) {
                     bool bPropTransparent = hasProp(chunk.blocks[i][j][k - 1], IS_SEE_THROUGH);
                     bool bPropDoubleSided = hasProp(chunk.blocks[i][j][k], IS_DOUBLESIDED);
                     if (bPropTransparent && (chunk.blocks[i][j][k - 1] != chunk.blocks[i][j][k] || bPropDoubleSided)) {
-                        vector<float> faceUV = getFaceUV(chunk.blocks[i][j][k], FACE_S);
+                        faceUV = getFaceUV(chunk.blocks[i][j][k], FACE_S);
                         if (bPropShadow) {
                             if (bPropOpaque) {
-                                addZNegFace(chunk.opaqueMesh, i, j, k, faceUV[0], faceUV[1], faceUV[2]);
+                                addZNegFace(chunk.opaqueMesh, i, j, k, faceUV.u, faceUV.v);
                             }
                             else {
                                 if (chunk.blocks[i][j][k - 1] == BLOCK_AIR) {
-                                    addZNegFace(chunk.transpMesh, i, j, k, faceUV[0], faceUV[1], faceUV[2]);
+                                    addZNegFace(chunk.transpMesh, i, j, k, faceUV.u, faceUV.v);
                                 }
                             }
                         }
                         else {
                             if (bPropOpaque) {
-                                addZNegFace(chunk.opaqueNoShadowMesh, i, j, k, faceUV[0], faceUV[1], faceUV[2]);
+                                addZNegFace(chunk.opaqueNoShadowMesh, i, j, k, faceUV.u, faceUV.v);
                             }
                             else {
                                 if (chunk.blocks[i][j][k - 1] == BLOCK_AIR) {
-                                    addZNegFace(chunk.transpNoShadowMesh, i, j, k, faceUV[0], faceUV[1], faceUV[2]);
+                                    addZNegFace(chunk.transpNoShadowMesh, i, j, k, faceUV.u, faceUV.v);
                                 }
                             }
                         }
@@ -952,24 +961,24 @@ void updateMesh(chunk& chunk) {
                     bool bPropTransparent = hasSouthChunk && hasProp(southChunk->blocks[i][j][0], IS_SEE_THROUGH);
                     bool bPropDoubleSided = hasProp(chunk.blocks[i][j][k], IS_DOUBLESIDED);
                     if (bPropTransparent && (southChunk->blocks[i][j][0] != chunk.blocks[i][j][k] || bPropDoubleSided)) {
-                        vector<float> faceUV = getFaceUV(chunk.blocks[i][j][k], FACE_N);
+                        faceUV = getFaceUV(chunk.blocks[i][j][k], FACE_N);
                         if (bPropShadow) {
                             if (bPropOpaque) {
-                                addZPosFace(chunk.opaqueMesh, i, j, k + 1, faceUV[0], faceUV[1], faceUV[2]);
+                                addZPosFace(chunk.opaqueMesh, i, j, k + 1, faceUV.u, faceUV.v);
                             }
                             else {
                                 if (southChunk->blocks[i][j][0] == BLOCK_AIR) {
-                                    addZPosFace(chunk.transpMesh, i, j, k + 1, faceUV[0], faceUV[1], faceUV[2]);
+                                    addZPosFace(chunk.transpMesh, i, j, k + 1, faceUV.u, faceUV.v);
                                 }
                             }
                         }
                         else {
                             if (bPropOpaque) {
-                                addZPosFace(chunk.opaqueNoShadowMesh, i, j, k + 1, faceUV[0], faceUV[1], faceUV[2]);
+                                addZPosFace(chunk.opaqueNoShadowMesh, i, j, k + 1, faceUV.u, faceUV.v);
                             }
                             else {
                                 if (southChunk->blocks[i][j][0] == BLOCK_AIR) {
-                                    addZPosFace(chunk.transpNoShadowMesh, i, j, k + 1, faceUV[0], faceUV[1], faceUV[2]);
+                                    addZPosFace(chunk.transpNoShadowMesh, i, j, k + 1, faceUV.u, faceUV.v);
                                 }
                             }
                         }
@@ -979,24 +988,24 @@ void updateMesh(chunk& chunk) {
                     bool bPropTransparent = hasProp(chunk.blocks[i][j][k + 1], IS_SEE_THROUGH);
                     bool bPropDoubleSided = hasProp(chunk.blocks[i][j][k], IS_DOUBLESIDED);
                     if (bPropTransparent && (chunk.blocks[i][j][k + 1] != chunk.blocks[i][j][k] || bPropDoubleSided)) {
-                        vector<float> faceUV = getFaceUV(chunk.blocks[i][j][k], FACE_N);
+                        faceUV = getFaceUV(chunk.blocks[i][j][k], FACE_N);
                         if (bPropShadow) {
                             if (bPropOpaque) {
-                                addZPosFace(chunk.opaqueMesh, i, j, k + 1, faceUV[0], faceUV[1], faceUV[2]);
+                                addZPosFace(chunk.opaqueMesh, i, j, k + 1, faceUV.u, faceUV.v);
                             }
                             else {
                                 if (chunk.blocks[i][j][k + 1] == BLOCK_AIR) {
-                                    addZPosFace(chunk.transpMesh, i, j, k + 1, faceUV[0], faceUV[1], faceUV[2]);
+                                    addZPosFace(chunk.transpMesh, i, j, k + 1, faceUV.u, faceUV.v);
                                 }
                             }
                         }
                         else {
                             if (bPropOpaque) {
-                                addZPosFace(chunk.opaqueNoShadowMesh, i, j, k + 1, faceUV[0], faceUV[1], faceUV[2]);
+                                addZPosFace(chunk.opaqueNoShadowMesh, i, j, k + 1, faceUV.u, faceUV.v);
                             }
                             else {
                                 if (chunk.blocks[i][j][k + 1] == BLOCK_AIR) {
-                                    addZPosFace(chunk.transpNoShadowMesh, i, j, k + 1, faceUV[0], faceUV[1], faceUV[2]);
+                                    addZPosFace(chunk.transpNoShadowMesh, i, j, k + 1, faceUV.u, faceUV.v);
                                 }
                             }
                         }
