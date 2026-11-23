@@ -99,6 +99,7 @@ void terminateRender() {
         }
     }
     opaqueMeshList.clear();
+
     for (Mesh* mesh : transpMeshList) {
         if (mesh != nullptr) {
             glDeleteVertexArrays(1, &mesh->VAO);
@@ -122,6 +123,7 @@ void terminateRender() {
         }
     }
     opaqueNoShadowMeshList.clear();
+
     for (Mesh* mesh : transpNoShadowMeshList) {
         if (mesh != nullptr) {
             glDeleteVertexArrays(1, &mesh->VAO);
@@ -171,9 +173,6 @@ void setMeshTextureFile(Mesh* mesh, const char* path) {
     stbi_image_free(data);
 }
 
-
-
-
 Mesh* setupMeshTexture(std::vector<float> vertices, const glm::vec3& position, bool transp, bool shadow, bool plant) {
     Mesh* mesh = new Mesh();
     mesh->vertices = vertices;
@@ -200,7 +199,6 @@ Mesh* setupMeshTexture(std::vector<float> vertices, const glm::vec3& position, b
     glEnableVertexAttribArray(1);
 
     glBindVertexArray(0);
-
 
     mesh->model = glm::mat4(glm::translate(glm::mat4(1.0f), position));
     mesh->color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
@@ -294,8 +292,6 @@ void setMeshAmbianteLightMult(Mesh* mesh, float ambianteLightMult) {
     if (mesh == nullptr) return;
     mesh->ambianteLightMult = ambianteLightMult;
 }
-
-
 
 Light* createLight(
     LightType type,
@@ -404,7 +400,6 @@ void setupLightShadow(Light* l) {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-
 void renderScene() {
     float currentFrame = static_cast<float>(glfwGetTime());
     deltaTime = currentFrame - lastFrame;
@@ -412,13 +407,11 @@ void renderScene() {
     calculerEtAfficherMoyenneFPS(1.0 / deltaTime, 60);
     //std::cout <<  deltaTime << std::endl;
 
-
     processInput(window);
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glBindVertexArray(0);
-
 
     //calculating shadow
     int parityFrameShadowRender = 1; //min 1, max =~ 2
@@ -457,18 +450,13 @@ void renderScene() {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glCullFace(GL_BACK);
 
-
-
-
     // render scene with shadow mapping
     glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-
     glDepthMask(GL_FALSE); // Désactive l'écriture dans le depth buffer
     renderSkybox(shaderSkybox, VAO_SKY, cubemapTexture);
     glDepthMask(GL_TRUE);
-
 
     glUseProgram(shaderProgram);
 
@@ -630,7 +618,6 @@ void renderScene() {
         glDrawArrays(GL_TRIANGLES, 0, 36);
     }
 
-
     //color view
     glClear(GL_DEPTH_BUFFER_BIT);
     glDepthMask(GL_FALSE);
@@ -644,7 +631,6 @@ void renderScene() {
     glUniform4fv(glGetUniformLocation(shaderLight, "color"), 1, glm::value_ptr(camera.colorOverlay));
     glBindVertexArray(VAO_LIGHT);
     glDrawArrays(GL_TRIANGLES, 0, 36);
-
 
     //cube pointeur GUI
     if (renderUI) {
@@ -824,7 +810,6 @@ void renderSkybox(unsigned int shader, unsigned int VAO, unsigned int cubemapTex
     glBindVertexArray(VAO);
     glDrawArrays(GL_TRIANGLES, 0, 36);
     glDepthFunc(GL_LESS); //fonction de profondeur par defaut
-
 }
 
 std::vector<float> addNormals(const std::vector<float>& verts) {

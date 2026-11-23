@@ -300,7 +300,6 @@ void initChunk(chunk& chunk, int x, int y) {
     //vector de taille CHUNKWIDTH par CHUNKWIDTH de int :
 	vector<vector<int>> surfaceLevel(CHUNKWIDTH, vector<int>(CHUNKHEIGHT, 0));
 
-
     for (int i = 0; i < CHUNKWIDTH; ++i) {
         for (int k = 0; k < CHUNKWIDTH; ++k) {
             //density gen
@@ -1183,19 +1182,15 @@ void raycastDDA(glm::vec3 start, glm::vec3 direction_, float maxDistance = 7.0f)
             break;
         }
 
-        
         int localX = blockPos.x - chunkX * CHUNKWIDTH;
         int localZ = blockPos.z - chunkZ * CHUNKWIDTH;
 
-        
         if (localX >= 0 && localX < CHUNKWIDTH &&
             blockPos.y >= 0 && blockPos.y < CHUNKHEIGHT &&
             localZ >= 0 && localZ < CHUNKWIDTH) {
 
-            
             signed char blockType = chunkIt->second.blocks[localX][blockPos.y][localZ];
 
-            
             if (blockType != air && blockType != water) {
                 hitBlock = true;
                 solidBlockPos = blockPos;
@@ -1406,7 +1401,6 @@ void processKey() {
         if (chunkItRight != chunks.end() && chunkItRight->second.isActive) {
             if (hasProp(chunkItRight->second.blocks[localXRight][blockHead][localZRight], SOLID) || hasProp(chunkItRight->second.blocks[localXRight][blockBelly][localZRight], SOLID) || hasProp(chunkItRight->second.blocks[localXRight][blockFoot][localZRight], SOLID)) {
                 rightBlockFree = false;
-                
             }
         }
 
@@ -1490,7 +1484,6 @@ void processKey() {
         if (camera.spacePressed && isOnGround) {
             camera.Yspeed = jumpHeight;
         }
-        
 
         if (camera.Position.y <= playerHeight) {
             camera.Position.y = CHUNKHEIGHT-1;
@@ -1525,7 +1518,6 @@ void setAtmosphere() {
 
 int main() {
     SetupRender("Minecraft", &camera);
-    
 
     camera.Position = glm::vec3(1.0, CHUNKHEIGHT-2 -20, 1.0);
 
