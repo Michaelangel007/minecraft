@@ -928,6 +928,7 @@ void processInput(GLFWwindow* window){
     camera.key7Pressed = (glfwGetKey(window, GLFW_KEY_7) == GLFW_PRESS);
     camera.key8Pressed = (glfwGetKey(window, GLFW_KEY_8) == GLFW_PRESS);
     camera.key9Pressed = (glfwGetKey(window, GLFW_KEY_9) == GLFW_PRESS);
+    camera.key0Pressed = (glfwGetKey(window, GLFW_KEY_0) == GLFW_PRESS);
 
     camera.tabPressed = (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS);
     camera.flyPressed = (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS);

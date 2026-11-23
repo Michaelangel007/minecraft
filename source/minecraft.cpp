@@ -1356,8 +1356,6 @@ void processClick() {
     else {
         updateBlockTarget(glm::vec3(0.0, 0.0, 0.0));
     }
-
-    
 }
 
 void processKey() {
@@ -1369,6 +1367,8 @@ void processKey() {
     if (camera.key6Pressed) currentBlock = BLOCK_GRASS;
     if (camera.key7Pressed) currentBlock = BLOCK_ORE_DIAMOND;
     if (camera.key8Pressed) currentBlock = BLOCK_OAK_LEAVES;
+    if (camera.key9Pressed) currentBlock = BLOCK_GRAVEL;
+    if (camera.key0Pressed) currentBlock = BLOCK_WATER;
 
     if (camera.arrowDownPressed) camera.ProcessMouseMovement(-0.0, -1.0);
     if (camera.arrowUpPressed) camera.ProcessMouseMovement(0.0, 1.0);

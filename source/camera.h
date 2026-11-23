@@ -54,6 +54,7 @@ public:
     bool key7Pressed = false;
     bool key8Pressed = false;
     bool key9Pressed = false;
+    bool key0Pressed = false;
 
     bool leftPressed = false;
     bool rightPressed = false;

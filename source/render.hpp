@@ -12,8 +12,6 @@
 class Camera;
 struct Light;
 
-
-
 // Structure Mesh
 struct Mesh {
     unsigned int VAO;
