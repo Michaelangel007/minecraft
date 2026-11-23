@@ -1,5 +1,5 @@
 #pragma once
-#include <iostream>
+#include <stdint.h>
 
 enum Block_e {
       BLOCK_AIR
@@ -45,7 +45,7 @@ enum BP {//block properties
 
 };
 
-const std::uint32_t BLOCK_PROP[] = {
+const uint32_t BLOCK_PROP[] = {
     TRANSPARENT,              // air 
     SOLID,                            // stone 
     SOLID,                            // dirt 
