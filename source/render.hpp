@@ -10,7 +10,7 @@
 
 // Forward declarations des classes utilisées
 class Camera;
-class Light;
+struct Light;
 
 
 
