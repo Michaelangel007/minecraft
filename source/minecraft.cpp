@@ -35,8 +35,13 @@ float playerHeight = 1.8;
 int waterHeight = 25;
 int seed = 1;
 
+#define XYZ_INT_TO_FLOAT \
+    const float x = static_cast<float>(ix); \
+    const float y = static_cast<float>(iy); \
+    const float z = static_cast<float>(iz);
 
-void addTopFace(vector<float>& mesh, float x, float y, float z, float ou, float ov, float s) {
+void addTopFace(vector<float>& mesh, int ix, int iy, int iz, float ou, float ov, float s) {
+    XYZ_INT_TO_FLOAT
     mesh.insert(mesh.end(), {
         x, y, z, ou, ov + s,
         x, y, z + 1, ou + s, ov + s,
@@ -47,7 +52,8 @@ void addTopFace(vector<float>& mesh, float x, float y, float z, float ou, float 
         });
 }
 
-void addBottomFace(vector<float>& mesh, float x, float y, float z, float ou, float ov, float s) {
+void addBottomFace(vector<float>& mesh, int ix, int iy, int iz, float ou, float ov, float s) {
+    XYZ_INT_TO_FLOAT
     mesh.insert(mesh.end(), {
         x + 1, y, z, ou, ov + s,
         x + 1, y, z + 1, ou + s, ov + s,
@@ -58,7 +64,8 @@ void addBottomFace(vector<float>& mesh, float x, float y, float z, float ou, flo
         });
 }
 
-void addXPosFace(vector<float>& mesh, float x, float y, float z, float ou, float ov, float s) {
+void addXPosFace(vector<float>& mesh, int ix, int iy, int iz, float ou, float ov, float s) {
+    XYZ_INT_TO_FLOAT
     mesh.insert(mesh.end(), {
         x, y, z, ou, ov + s,
         x, y + 1, z, ou, ov,
@@ -69,7 +76,8 @@ void addXPosFace(vector<float>& mesh, float x, float y, float z, float ou, float
         });
 }
 
-void addXNegFace(vector<float>& mesh, float x, float y, float z, float ou, float ov, float s) {
+void addXNegFace(vector<float>& mesh, int ix, int iy, int iz, float ou, float ov, float s) {
+    XYZ_INT_TO_FLOAT
     mesh.insert(mesh.end(), {
         x, y, z + 1, ou, ov + s,
         x, y + 1, z + 1, ou, ov,
@@ -80,7 +88,8 @@ void addXNegFace(vector<float>& mesh, float x, float y, float z, float ou, float
         });
 }
 
-void addZPosFace(vector<float>& mesh, float x, float y, float z, float ou, float ov, float s) {
+void addZPosFace(vector<float>& mesh, int ix, int iy, int iz, float ou, float ov, float s) {
+    XYZ_INT_TO_FLOAT
     mesh.insert(mesh.end(), {
         x, y, z, ou, ov + s,
         x + 1, y, z, ou + s, ov + s,
@@ -91,7 +100,8 @@ void addZPosFace(vector<float>& mesh, float x, float y, float z, float ou, float
         });
 }
 
-void addZNegFace(vector<float>& mesh, float x, float y, float z, float ou, float ov, float s) {
+void addZNegFace(vector<float>& mesh, int ix, int iy, int iz, float ou, float ov, float s) {
+    XYZ_INT_TO_FLOAT
     mesh.insert(mesh.end(), {
         x + 1, y, z, ou, ov + s,
         x, y, z, ou + s, ov + s,
@@ -102,7 +112,8 @@ void addZNegFace(vector<float>& mesh, float x, float y, float z, float ou, float
         });
 }
 
-void addPlantFace(vector<float>& mesh, float x, float y, float z, float ou, float ov, float s) {
+void addPlantFace(vector<float>& mesh, int ix, int iy, int iz, float ou, float ov, float s) {
+    XYZ_INT_TO_FLOAT
     mesh.insert(mesh.end(), {
         x-1, y, z, ou, ov + s,
         x-1, y + 1, z, ou, ov,
