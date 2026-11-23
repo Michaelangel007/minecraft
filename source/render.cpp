@@ -205,7 +205,7 @@ Mesh* setupMeshTexture(std::vector<float> vertices, const glm::vec3& position, b
     mesh->shininess = 32;
     mesh->ambianteLightMult = 0.8f;
     mesh->enableTexture = true;
-	if (plant) plantMeshList.push_back(mesh);
+    if (plant) plantMeshList.push_back(mesh);
     else if (!transp && shadow) opaqueMeshList.push_back(mesh);
     else if (transp && shadow) transpMeshList.push_back(mesh);
     else if (!transp && !shadow) opaqueNoShadowMeshList.push_back(mesh);
@@ -404,7 +404,7 @@ void renderScene() {
     float currentFrame = static_cast<float>(glfwGetTime());
     deltaTime = currentFrame - lastFrame;
     lastFrame = currentFrame;
-    calculerEtAfficherMoyenneFPS(1.0 / deltaTime, 60);
+    calculerEtAfficherMoyenneFPS(1.0f / deltaTime, 60);
     //std::cout <<  deltaTime << std::endl;
 
     processInput(window);
@@ -591,7 +591,7 @@ void renderScene() {
 
     //---BOX LIGHT---
     glUseProgram(shaderLight);
-	bool renderBoxLight = false;
+    bool renderBoxLight = false;
     if (renderBoxLight) {
         for (int i = 0; i < lightList.size(); i++) {
             glm::vec3 boxPos = ((*lightList[i]).type == POINT) ? (*lightList[i]).position : glm::vec3(0.0, 0.0, 0.0) + glm::float32(4.0)*glm::normalize((*lightList[i]).direction);
@@ -952,25 +952,25 @@ void processInput(GLFWwindow* window){
     oPrevPressed = oCurrentPressed;
     pPrevPressed = pCurrentPressed;
 
-	static bool lPrevPressed = false;
-	static bool kPrevPressed = false;
-	bool lCurrentPressed = glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS;
-	bool kCurrentPressed = glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS;
+    static bool lPrevPressed = false;
+    static bool kPrevPressed = false;
+    bool lCurrentPressed = glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS;
+    bool kCurrentPressed = glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS;
     if (lCurrentPressed && !lPrevPressed) {
         camera.renderDistance += 1;
-	}
+    }
     if (kCurrentPressed && !kPrevPressed) {
         camera.renderDistance += -1;
-	}
-	lPrevPressed = lCurrentPressed;
-	kPrevPressed = kCurrentPressed;
+    }
+    lPrevPressed = lCurrentPressed;
+    kPrevPressed = kCurrentPressed;
 
     static bool nPrevPressed = false;
     bool nCurrentPressed = glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS;
     if (nCurrentPressed && !nPrevPressed) {
-		renderUI = !renderUI;
+        renderUI = !renderUI;
     }
-	nPrevPressed = nCurrentPressed;
+    nPrevPressed = nCurrentPressed;
 }
 
 void mouse_callback(GLFWwindow* window, double xposIn, double yposIn){
