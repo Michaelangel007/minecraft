@@ -183,20 +183,23 @@ void addPlantFace(vector<float>& mesh, int ix, int iy, int iz, float ou, float o
 // Keys: BlockId, FaceId return the tile index in the texture atlas
 // NOTE: This table can be entirely optimized away if we use a sampler2DArray, and pass z == layer
 // TODO: This really should be built dynamically from the available texture blocks.
+//
+// Face   E    N    W    S    U    D
+//       +X   +Z   -X   -Z   +Y   -Y
 const int BLOCK_FACE_TO_TILE[NUM_BLOCKS][NUM_FACES] = {
-      { 255, 255, 255, 255, 255, 255 } //  0: air
+{ 255, 255, 255, 255, 255, 255 } //  0: air
     , {   0,   0,   0,   0,   0,   0 } //  1: stone
     , {   3,   3,   3,   3,   3,   3 } //  2: dirt
-    , {   4,   4,   3,   5,   4,   4 } //  3: grass
+    , {   4,   4,   4,   4,   5,   3 } //  3: grass
     , {  10,  10,  10,  10,  10,  10 } //  4: sand
-    , {  13,  13,   3,  14,  13,  13 } //  5: snowy_grass
+    , {  13,  13,  13,  13,  14,   3 } //  5: snowy_grass
     , {   2,   2,   2,   2,   2,   2 } //  6: glass
     , {   6,   6,   6,   6,   6,   6 } //  7: diamond_ore
     , {   1,   1,   1,   1,   1,   1 } //  8: oak_planks
-    , {   8,   8,   9,   9,   8,   8 } //  9: oak_log
+    , {   8,   8,   8,   8,   9,   9 } //  9: oak_log
     , {   7,   7,   7,   7,   7,   7 } // 10: oak_leaves
-    , {  16,  16,  17,  17,  16,  16 } // 11: cactus
-    , {  18,  18,  19,  19,  18,  18 } // 12: spruce_log
+    , {  16,  16,  16,  16,  17,  17 } // 11: cactus
+    , {  18,  18,  18,  18,  19,  19 } // 12: spruce_log
     , {  20,  20,  20,  20,  20,  20 } // 13: spruce_leaves
     , {  12,  12,  12,  12,  12,  12 } // 14: water
     , {  21,  21,  21,  21,  21,  21 } // 15: short_grass
@@ -209,13 +212,13 @@ const int BLOCK_FACE_TO_TILE[NUM_BLOCKS][NUM_FACES] = {
     , {  15,  15,  15,  15,  15,  15 } // 22: coal_ore
     , {  26,  26,  26,  26,  26,  26 } // 23: ice
     , {  29,  29,  29,  29,  29,  29 } // 24: bedrock
-    , {  30,  30,  30,  30,  30,  30 } // 25: brain_coral
-    , {  31,  31,  31,  31,  31,  31 } // 26: tube_coral
-    , {  32,  32,  32,  32,  32,  32 } // 27: fire_coral_block
-    , {  33,  33,  33,  33,  33,  33 } // 28: tube_coral_block};
+    , {  30,  30,  30,  30,  30,  30 } // 25: brain_coral_fan  FAN
+    , {  31,  31,  31,  31,  31,  31 } // 26: tube_coral_fan   FAN
+    , {  32,  32,  32,  32,  32,  32 } // 27: fire_coral_block BLOCK
+    , {  33,  33,  33,  33,  33,  33 } // 28: tube_coral_block BLOCK
 };
 
-vector<float> getFaceUV(int block, int face) {
+vector<float> getFaceUV(int block, Face_e face) {
     assert(block < NUM_BLOCKS);
     assert(face < NUM_FACES);
 
@@ -656,23 +659,31 @@ void updateMesh(chunk& chunk) {
                 if (chunk.blocks[i][j][k] == BLOCK_AIR) continue;
                 if (hasProp(chunk.blocks[i][j][k], HAS_WIND_SWAY)) {
                     if (hasProp(chunk.blocks[i][j][k], IS_CROSS_SHAPED)) {
-                        vector<float> faceUV = getFaceUV(chunk.blocks[i][j][k], 0);
+                        vector<float> faceUV = getFaceUV(chunk.blocks[i][j][k], FACE_E);
                         addPlantFace(chunk.plantMesh, i + 1, j, k, faceUV[0], faceUV[1], faceUV[2]);
                         continue;
                     }
                     else {
-                        vector<float> faceUV = getFaceUV(chunk.blocks[i][j][k], 0);
+                        vector<float> faceUV;
+
+                        faceUV = getFaceUV(chunk.blocks[i][j][k], FACE_E);
                         addXNegFace(chunk.plantMesh, i, j, k, faceUV[0], faceUV[1], faceUV[2]);
-                        faceUV = getFaceUV(chunk.blocks[i][j][k], 1);
+
+                        faceUV = getFaceUV(chunk.blocks[i][j][k], FACE_W);
                         addXPosFace(chunk.plantMesh, i + 1, j, k, faceUV[0], faceUV[1], faceUV[2]);
-                        faceUV = getFaceUV(chunk.blocks[i][j][k], 2);
+
+                        faceUV = getFaceUV(chunk.blocks[i][j][k], FACE_D);
                         addBottomFace(chunk.plantMesh, i, j, k, faceUV[0], faceUV[1], faceUV[2]);
-                        faceUV = getFaceUV(chunk.blocks[i][j][k], 3);
+
+                        faceUV = getFaceUV(chunk.blocks[i][j][k], FACE_U);
                         addTopFace(chunk.plantMesh, i, j + 1, k, faceUV[0], faceUV[1], faceUV[2]);
-                        faceUV = getFaceUV(chunk.blocks[i][j][k], 4);
+
+                        faceUV = getFaceUV(chunk.blocks[i][j][k], FACE_S);
                         addZNegFace(chunk.plantMesh, i, j, k, faceUV[0], faceUV[1], faceUV[2]);
-                        faceUV = getFaceUV(chunk.blocks[i][j][k], 5);
+
+                        faceUV = getFaceUV(chunk.blocks[i][j][k], FACE_N);
                         addZPosFace(chunk.plantMesh, i, j, k+1, faceUV[0], faceUV[1], faceUV[2]);
+
                         continue;
                     }
                 }
@@ -685,7 +696,7 @@ void updateMesh(chunk& chunk) {
                     bool bPropTransparent = hasWestChunk && hasProp(westChunk->blocks[CHUNKWIDTH - 1][j][k], IS_SEE_THROUGH);
                     bool bPropDoubleSided = hasProp(chunk.blocks[i][j][k], IS_DOUBLESIDED);
                     if (bPropTransparent && (westChunk->blocks[CHUNKWIDTH - 1][j][k] != chunk.blocks[i][j][k] || bPropDoubleSided)) {
-                        vector<float> faceUV = getFaceUV(chunk.blocks[i][j][k], 0);
+                        vector<float> faceUV = getFaceUV(chunk.blocks[i][j][k], FACE_E);
                         if (bPropShadow) {
                             if (bPropOpaque) {
                                 addXNegFace(chunk.opaqueMesh, i, j, k, faceUV[0], faceUV[1], faceUV[2]);
@@ -712,7 +723,7 @@ void updateMesh(chunk& chunk) {
                     bool bPropTransparent = hasProp(chunk.blocks[i - 1][j][k], IS_SEE_THROUGH);
                     bool bPropDoubleSided = hasProp(chunk.blocks[i][j][k], IS_DOUBLESIDED);
                     if (bPropTransparent && (chunk.blocks[i - 1][j][k] != chunk.blocks[i][j][k] || bPropDoubleSided)) {
-                        vector<float> faceUV = getFaceUV(chunk.blocks[i][j][k], 0);
+                        vector<float> faceUV = getFaceUV(chunk.blocks[i][j][k], FACE_E);
                         if (bPropShadow) {
                             if (bPropOpaque) {
                                 addXNegFace(chunk.opaqueMesh, i, j, k, faceUV[0], faceUV[1], faceUV[2]);
@@ -741,7 +752,7 @@ void updateMesh(chunk& chunk) {
                     bool bPropTransparent = hasEastChunk && hasProp(eastChunk->blocks[0][j][k], IS_SEE_THROUGH);
                     bool bPropDoubleSided = hasProp(chunk.blocks[i][j][k], IS_DOUBLESIDED);
                     if (bPropTransparent && (eastChunk->blocks[0][j][k] != chunk.blocks[i][j][k] || bPropDoubleSided)) {
-                        vector<float> faceUV = getFaceUV(chunk.blocks[i][j][k], 1);
+                        vector<float> faceUV = getFaceUV(chunk.blocks[i][j][k], FACE_W);
                         if (bPropShadow) {
                             if (bPropOpaque) {
                                 addXPosFace(chunk.opaqueMesh, i + 1, j, k, faceUV[0], faceUV[1], faceUV[2]);
@@ -770,7 +781,7 @@ void updateMesh(chunk& chunk) {
                     bool bPropTransparent = hasProp(chunk.blocks[i + 1][j][k], IS_SEE_THROUGH);
                     bool bPropDoubleSided = hasProp(chunk.blocks[i][j][k], IS_DOUBLESIDED);
                     if (bPropTransparent && (chunk.blocks[i + 1][j][k] != chunk.blocks[i][j][k] || bPropDoubleSided)) {
-                        vector<float> faceUV = getFaceUV(chunk.blocks[i][j][k], 1);
+                        vector<float> faceUV = getFaceUV(chunk.blocks[i][j][k], FACE_W);
                         if (bPropShadow) {
                             if (bPropOpaque) {
                                 addXPosFace(chunk.opaqueMesh, i + 1, j, k, faceUV[0], faceUV[1], faceUV[2]);
@@ -796,7 +807,7 @@ void updateMesh(chunk& chunk) {
 
                 //BOTTOM FACE
                 if (j == 0) {//face vers le bas, inutile
-                    /*vector<float> faceUV = getFaceUV(chunk.blocks[i][j][k], 2);
+                    /*vector<float> faceUV = getFaceUV(chunk.blocks[i][j][k], FACE_D);
                     if (chunk.blocks[i][j][k] >= 0) {
                         //addBottomFace(chunk.mesh, i, j, k, faceUV[0], faceUV[1], faceUV[2]);
                     }
@@ -808,7 +819,7 @@ void updateMesh(chunk& chunk) {
                     bool bPropTransparent = hasProp(chunk.blocks[i][j - 1][k], IS_SEE_THROUGH);
                     bool bPropDoubleSided = hasProp(chunk.blocks[i][j][k], IS_DOUBLESIDED);
                     if (bPropTransparent && (chunk.blocks[i][j - 1][k] != chunk.blocks[i][j][k] || bPropDoubleSided)) {
-                        vector<float> faceUV = getFaceUV(chunk.blocks[i][j][k], 2);
+                        vector<float> faceUV = getFaceUV(chunk.blocks[i][j][k], FACE_D);
                         if (bPropShadow) {
                             if (bPropOpaque) {
                                 addBottomFace(chunk.opaqueMesh, i, j, k, faceUV[0], faceUV[1], faceUV[2]);
@@ -834,7 +845,7 @@ void updateMesh(chunk& chunk) {
 
                 //TOP FACE
                 if (j == CHUNKHEIGHT - 1) {
-                    vector<float> faceUV = getFaceUV(chunk.blocks[i][j][k], 3);
+                    vector<float> faceUV = getFaceUV(chunk.blocks[i][j][k], FACE_U);
                     if (bPropShadow) {
                         if (bPropOpaque) {
                             addTopFace(chunk.opaqueMesh, i, j + 1, k, faceUV[0], faceUV[1], faceUV[2]);
@@ -856,7 +867,7 @@ void updateMesh(chunk& chunk) {
                     bool bPropTransparent = hasProp(chunk.blocks[i][j + 1][k], IS_SEE_THROUGH);
                     bool bPropDoubleSided = hasProp(chunk.blocks[i][j][k], IS_DOUBLESIDED);
                     if (bPropTransparent && (chunk.blocks[i][j + 1][k] != chunk.blocks[i][j][k] || bPropDoubleSided)) {
-                        vector<float> faceUV = getFaceUV(chunk.blocks[i][j][k], 3);
+                        vector<float> faceUV = getFaceUV(chunk.blocks[i][j][k], FACE_U);
                         if (bPropShadow) {
                             if (bPropOpaque) {
                                 addTopFace(chunk.opaqueMesh, i, j + 1, k, faceUV[0], faceUV[1], faceUV[2]);
@@ -885,7 +896,7 @@ void updateMesh(chunk& chunk) {
                     bool bPropTransparent = hasNorthChunk && hasProp(northChunk->blocks[i][j][CHUNKWIDTH - 1], IS_SEE_THROUGH);
                     bool bPropDoubleSided = hasProp(chunk.blocks[i][j][k], IS_DOUBLESIDED);
                     if (bPropTransparent && (northChunk->blocks[i][j][CHUNKWIDTH - 1] != chunk.blocks[i][j][k] || bPropDoubleSided)) {
-                        vector<float> faceUV = getFaceUV(chunk.blocks[i][j][k], 4);
+                        vector<float> faceUV = getFaceUV(chunk.blocks[i][j][k], FACE_S);
                         if (bPropShadow) {
                             if (bPropOpaque) {
                                 addZNegFace(chunk.opaqueMesh, i, j, k, faceUV[0], faceUV[1], faceUV[2]);
@@ -912,7 +923,7 @@ void updateMesh(chunk& chunk) {
                     bool bPropTransparent = hasProp(chunk.blocks[i][j][k - 1], IS_SEE_THROUGH);
                     bool bPropDoubleSided = hasProp(chunk.blocks[i][j][k], IS_DOUBLESIDED);
                     if (bPropTransparent && (chunk.blocks[i][j][k - 1] != chunk.blocks[i][j][k] || bPropDoubleSided)) {
-                        vector<float> faceUV = getFaceUV(chunk.blocks[i][j][k], 4);
+                        vector<float> faceUV = getFaceUV(chunk.blocks[i][j][k], FACE_S);
                         if (bPropShadow) {
                             if (bPropOpaque) {
                                 addZNegFace(chunk.opaqueMesh, i, j, k, faceUV[0], faceUV[1], faceUV[2]);
@@ -941,7 +952,7 @@ void updateMesh(chunk& chunk) {
                     bool bPropTransparent = hasSouthChunk && hasProp(southChunk->blocks[i][j][0], IS_SEE_THROUGH);
                     bool bPropDoubleSided = hasProp(chunk.blocks[i][j][k], IS_DOUBLESIDED);
                     if (bPropTransparent && (southChunk->blocks[i][j][0] != chunk.blocks[i][j][k] || bPropDoubleSided)) {
-                        vector<float> faceUV = getFaceUV(chunk.blocks[i][j][k], 5);
+                        vector<float> faceUV = getFaceUV(chunk.blocks[i][j][k], FACE_N);
                         if (bPropShadow) {
                             if (bPropOpaque) {
                                 addZPosFace(chunk.opaqueMesh, i, j, k + 1, faceUV[0], faceUV[1], faceUV[2]);
@@ -968,7 +979,7 @@ void updateMesh(chunk& chunk) {
                     bool bPropTransparent = hasProp(chunk.blocks[i][j][k + 1], IS_SEE_THROUGH);
                     bool bPropDoubleSided = hasProp(chunk.blocks[i][j][k], IS_DOUBLESIDED);
                     if (bPropTransparent && (chunk.blocks[i][j][k + 1] != chunk.blocks[i][j][k] || bPropDoubleSided)) {
-                        vector<float> faceUV = getFaceUV(chunk.blocks[i][j][k], 5);
+                        vector<float> faceUV = getFaceUV(chunk.blocks[i][j][k], FACE_N);
                         if (bPropShadow) {
                             if (bPropOpaque) {
                                 addZPosFace(chunk.opaqueMesh, i, j, k + 1, faceUV[0], faceUV[1], faceUV[2]);

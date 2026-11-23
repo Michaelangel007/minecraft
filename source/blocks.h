@@ -74,8 +74,8 @@ const uint32_t BLOCK_PROPERTIES[ NUM_BLOCKS ] = {
     ,IS_SOLID                                                        // coal_ore
     ,IS_SOLID | IS_SEE_THROUGH                                       // ice
     ,IS_SOLID                                                        // bedrock
-    ,           IS_SEE_THROUGH | HAS_WIND_SWAY | IS_CROSS_SHAPED     // brain_coral
-    ,           IS_SEE_THROUGH | HAS_WIND_SWAY | IS_CROSS_SHAPED     // tube_coral
+    ,           IS_SEE_THROUGH | HAS_WIND_SWAY | IS_CROSS_SHAPED     // brain_coral_fan
+    ,           IS_SEE_THROUGH | HAS_WIND_SWAY | IS_CROSS_SHAPED     // tube_coral_fan
     ,IS_SOLID                                                        // fire_coral_block
     ,IS_SOLID                                                        // tube_coral_block
 };
