@@ -607,7 +607,7 @@ void renderScene() {
         }
     }
 
-    //render bock target : //re use same thing as light
+    //render block target : //re use same thing as light
     //glUseProgram(shaderLight);
     if (renderUI) {
         glUniformMatrix4fv(glGetUniformLocation(shaderLight, "model"), 1, GL_FALSE, glm::value_ptr(glm::scale(glm::mat4(glm::translate(glm::mat4(1.0f), blockTargetPos + glm::vec3(0.5, 0.5, 0.5) - camera.Position)), glm::vec3(0.505f))));

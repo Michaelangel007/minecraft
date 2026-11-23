@@ -383,7 +383,7 @@ void initChunk(chunk& chunk, int x, int y) {
 
         }
     }
-    //tree / strcuture
+    //tree / structure
     for (int i = -3; i < CHUNKWIDTH + 3; ++i) {
         for (int k = -3; k < CHUNKWIDTH+3; ++k) {
             if (asATree(i + key.x * CHUNKWIDTH, k + key.y * CHUNKWIDTH, seed)) {
