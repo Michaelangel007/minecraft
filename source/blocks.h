@@ -34,52 +34,60 @@ enum Block_e {
     , NUM_BLOCKS = 29
 };
 
-enum BP {//block properties
-	SOLID = 1 << 0,
-	TRANSPARENT = 1 << 1, //glass, leaves, water, short grass
-	RENDER_INSIDE = 1 << 2, //water
-	PLANT = 1 << 3, //move with wind
-	DONT_CAST_SHADOW = 1 << 4, //glass, water
-	SEMI_TRANSPARENT = 1 << 5, //semi-transparent blocks like water
-	CROSS_SHAPE = 1 << 6, //blocks that have a cross shape like dandelion, poppy, short grass
-
+// There is NOT a 1:1 mapping to render mesh types
+// e.g. transpNoShadowMesh == HAS_NO_SHADOW, IS_SEMI_TRANSPARENT
+enum BlockProperties_e {
+    IS_SOLID            = 1 << 0, // physics collision
+    IS_SEE_THROUGH      = 1 << 1, // glass, leaves, water, short grass
+    IS_DOUBLESIDED      = 1 << 2, // leaves
+    HAS_WIND_SWAY       = 1 << 3, // move with wind
+    HAS_NO_SHADOW       = 1 << 4, // glass, water don't cast shadows
+    IS_SEMI_TRANSPARENT = 1 << 5, // semi-transparent blocks like water
+    IS_CROSS_SHAPED     = 1 << 6, // cross shaped like dandelion, poppy, short grass
+// IS_ORE
+// IS_UNBREAKABLE
 };
 
-const uint32_t BLOCK_PROP[] = {
-    TRANSPARENT,              // air 
-    SOLID,                            // stone 
-    SOLID,                            // dirt 
-    SOLID,                            // grass 
-    SOLID,                            // sand 
-    SOLID,                            // snowy_gras 
-    SOLID|TRANSPARENT|DONT_CAST_SHADOW,// glass 
-    SOLID,                            // diamond 
-    SOLID,                            // oka_plank
-    SOLID,                            // oka_log 
-    TRANSPARENT|RENDER_INSIDE|PLANT,  // oka_leaves
-    SOLID,                            // cactus 
-    SOLID,                            // spruce_log
-    TRANSPARENT|RENDER_INSIDE | PLANT,// spruce_leaves
-    TRANSPARENT|DONT_CAST_SHADOW|SEMI_TRANSPARENT,// water
-    PLANT|TRANSPARENT | CROSS_SHAPE,// short grass
-    PLANT|TRANSPARENT | CROSS_SHAPE,//poppy
-    PLANT | TRANSPARENT | CROSS_SHAPE,//dandelion
-    PLANT | TRANSPARENT  | CROSS_SHAPE,//dead bush
-    PLANT | TRANSPARENT | CROSS_SHAPE,//sweet berry
-    PLANT | TRANSPARENT | CROSS_SHAPE,//kelp
-    SOLID,                            // gravel 
-	SOLID,                            // coal_ore
-    SOLID | TRANSPARENT ,   // ice
-    SOLID,                            // bedrock
-    PLANT | TRANSPARENT | CROSS_SHAPE, // brain_coral
-    PLANT | TRANSPARENT | CROSS_SHAPE, // tube_coral
-    SOLID, // fire_coral_block
-	SOLID, // tube_coral_block
-
+const uint32_t BLOCK_PROPERTIES[ NUM_BLOCKS ] = {
+                IS_SEE_THROUGH                                       // air
+    ,IS_SOLID                                                        // stone
+    ,IS_SOLID                                                        // dirt
+    ,IS_SOLID                                                        // grass
+    ,IS_SOLID                                                        // sand
+    ,IS_SOLID                                                        // snowy_gras
+    ,IS_SOLID | IS_SEE_THROUGH | HAS_NO_SHADOW                       // glass
+    ,IS_SOLID                                                        // diamond
+    ,IS_SOLID                                                        // oka_plank
+    ,IS_SOLID                                                        // oka_log
+    ,           IS_SEE_THROUGH | HAS_WIND_SWAY | IS_DOUBLESIDED      // oka_leaves
+    ,IS_SOLID                                                        // cactus
+    ,IS_SOLID                                                        // spruce_log
+    ,           IS_SEE_THROUGH | HAS_WIND_SWAY | IS_DOUBLESIDED      // spruce_leaves
+    ,           IS_SEE_THROUGH | HAS_NO_SHADOW | IS_SEMI_TRANSPARENT // water
+    ,           IS_SEE_THROUGH | HAS_WIND_SWAY | IS_CROSS_SHAPED     // short grass
+    ,           IS_SEE_THROUGH | HAS_WIND_SWAY | IS_CROSS_SHAPED     // poppy
+    ,           IS_SEE_THROUGH | HAS_WIND_SWAY | IS_CROSS_SHAPED     // dandelion
+    ,           IS_SEE_THROUGH | HAS_WIND_SWAY | IS_CROSS_SHAPED     // dead bush
+    ,           IS_SEE_THROUGH | HAS_WIND_SWAY | IS_CROSS_SHAPED     // sweet berry
+    ,           IS_SEE_THROUGH | HAS_WIND_SWAY | IS_CROSS_SHAPED     // kelp
+    ,IS_SOLID                                                        // gravel
+    ,IS_SOLID                                                        // coal_ore
+    ,IS_SOLID | IS_SEE_THROUGH                                       // ice
+    ,IS_SOLID                                                        // bedrock
+    ,           IS_SEE_THROUGH | HAS_WIND_SWAY | IS_CROSS_SHAPED     // brain_coral
+    ,           IS_SEE_THROUGH | HAS_WIND_SWAY | IS_CROSS_SHAPED     // tube_coral
+    ,IS_SOLID                                                        // fire_coral_block
+    ,IS_SOLID                                                        // tube_coral_block
 };
 
-bool hasProp(int block_id, BP prop);
+inline bool hasProp(int block_id, BlockProperties_e prop) {
+    return (BLOCK_PROPERTIES[block_id] & prop) != 0;
+}
 
-bool hasAllProp(int block_id, uint32_t properties);
+inline bool hasAllProp(int block_id, uint32_t properties) {
+    return (BLOCK_PROPERTIES[block_id] & properties) == properties;
+}
 
-bool hasAnyProp(int block_id, uint32_t properties);
+inline bool hasAnyProp(int block_id, uint32_t properties) {
+    return (BLOCK_PROPERTIES[block_id] & properties) != 0;
+}
