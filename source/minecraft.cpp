@@ -12,6 +12,14 @@
 #include "render.hpp"
 #include "structure.h"
 
+enum Biome_e {
+      BIOME_PLAINS
+    , BIOME_SNOW
+    , BIOME_DESERT
+    , BIOME_NUM
+    , BIOME_NONE = -1
+};
+
 #define CHUNKWIDTH 30
 #define CHUNKHEIGHT 120
 //#define RENDER_DISTANCE 10 camera.renderDistance;
@@ -261,18 +269,19 @@ bool asATree(int x, int y , int seed) {
     return (hash2D(x, y, seed) % 1000) < (int)(density * 1000);
 }
 
-int biomeTemperature(int x, int y, int seed) {
+Biome_e getBiomeTemperature(int x, int y, int seed) {
     double temp = db::perlin( (double)x / 500.0, (double)y / 500.0 + 400*seed);
     temp += db::perlin((double)x / 5.0, (double)y / 5.0 + 500.0 * seed)*0.02;
     if (temp < -0.3) {
-        return 1;
+        return BIOME_SNOW;
     }
     if (temp < 0.3) {
-        return 0;
+        return BIOME_PLAINS;
     }
     if (temp < 1.0) {
-        return 2;
+        return BIOME_DESERT;
     }
+    return BIOME_NONE;
 }
 
 void placeBlockStructure(vector<vector<vector<signed char>>>& chunk, std::vector<std::tuple<int, int, int, int, int>> structure, int lx, int ly, int lz) {
@@ -323,8 +332,8 @@ void initChunk(chunk& chunk, int x, int y) {
             }
 
             //differentiation
-            int biome = biomeTemperature(i + key.x * CHUNKWIDTH, k + key.y * CHUNKWIDTH, seed);
-            if (biome == 0) { //plains
+            Biome_e biome = getBiomeTemperature(i + key.x * CHUNKWIDTH, k + key.y * CHUNKWIDTH, seed);
+            if (biome == BIOME_PLAINS) {
                 for (int j = 0; j < CHUNKHEIGHT - 2; ++j) {
                     if (j >= waterHeight) {
                         if (chunk.blocks[i][j][k] == stone && !hasProp(chunk.blocks[i][j + 1][k], SOLID)) {
@@ -346,7 +355,7 @@ void initChunk(chunk& chunk, int x, int y) {
                     }
                 }
             }
-            if (biome == 1) { //plains
+            if (biome == BIOME_SNOW) {
                 for (int j = 0; j < CHUNKHEIGHT - 2; ++j) {
                     if (j >= waterHeight) {
                         if (chunk.blocks[i][j][k] == stone && !hasProp(chunk.blocks[i][j + 1][k], SOLID)) {
@@ -368,8 +377,7 @@ void initChunk(chunk& chunk, int x, int y) {
                     }
                 }
             }
-            else if (biome == 2) {
-                //desert
+            else if (biome == BIOME_DESERT) {
                 for (int j = 0; j < CHUNKHEIGHT - 2; ++j) {
                     if (chunk.blocks[i][j][k] == stone && !hasProp(chunk.blocks[i][j + 1][k], SOLID)) {
                         chunk.blocks[i][j][k] = sand;
@@ -388,7 +396,7 @@ void initChunk(chunk& chunk, int x, int y) {
         for (int k = -3; k < CHUNKWIDTH+3; ++k) {
             if (asATree(i + key.x * CHUNKWIDTH, k + key.y * CHUNKWIDTH, seed)) {
                 int h = 0;
-                int biome = biomeTemperature(i + key.x * CHUNKWIDTH, k + key.y * CHUNKWIDTH, seed);
+                Biome_e biome = getBiomeTemperature(i + key.x * CHUNKWIDTH, k + key.y * CHUNKWIDTH, seed);
                 if (i < 0 || k < 0 || i >= CHUNKWIDTH || k >= CHUNKWIDTH) {
                     for (int j = CHUNKHEIGHT - 2; j >= 0; --j) {
                         if (blockDensity(i + key.x * CHUNKWIDTH, j, k + key.y * CHUNKWIDTH, seed) < 0.0) {
@@ -400,7 +408,7 @@ void initChunk(chunk& chunk, int x, int y) {
                     h = surfaceLevel[i][k];
                 }
                 if (h >= waterHeight+2) {
-                    if (h != 0 && biome == 0) {
+                    if (h != 0 && biome == BIOME_PLAINS) {
                         int type = hash2D(i + key.x * CHUNKWIDTH, k + key.y * CHUNKWIDTH, seed) % 35;
                         if(type < 10) {
                             placeBlockStructure(chunk.blocks, oak_tree_1, i, h, k);
@@ -412,7 +420,7 @@ void initChunk(chunk& chunk, int x, int y) {
                             placeBlockStructure(chunk.blocks, oak_tree_4, i, h, k);
                         }
                     }
-                    else if (h != 0 && biome == 1) {
+                    else if (h != 0 && biome == BIOME_SNOW) {
                         int type = hash2D(i + key.x * CHUNKWIDTH, k + key.y * CHUNKWIDTH, seed) % 34;
                         if (type < 10) {
                             placeBlockStructure(chunk.blocks, spruce_tree_1, i, h, k);
@@ -427,7 +435,7 @@ void initChunk(chunk& chunk, int x, int y) {
                             placeBlockStructure(chunk.blocks, spruce_tree_4, i, h, k);
                         }
                     }
-                    else if (h != 0 && biome == 2 && (i + key.x * CHUNKWIDTH, k + key.y * CHUNKWIDTH)%11 == 0) {
+                    else if (h != 0 && biome == BIOME_DESERT && (i + key.x * CHUNKWIDTH, k + key.y * CHUNKWIDTH)%11 == 0) {
                         if ((i + key.x * CHUNKWIDTH, k + key.y * CHUNKWIDTH) % 5 == 0) {
                             placeBlockStructure(chunk.blocks, cactus_2, i, h, k);
                         }
@@ -441,7 +449,7 @@ void initChunk(chunk& chunk, int x, int y) {
                 }
                 else {
                     if (h > 1 && h < waterHeight - 2) {
-                        if (biome == 0) {
+                        if (biome == BIOME_PLAINS) {
                             if ((hash2D(i + key.x * CHUNKWIDTH, k + key.y * CHUNKWIDTH, seed) % 100) < 5) {
                                 int type = hash2D(i + key.x * CHUNKWIDTH, k + key.y * CHUNKWIDTH, seed) % 14;
                                 if (type < 1) placeBlockStructure(chunk.blocks, coral_1, i, h, k);
@@ -459,10 +467,10 @@ void initChunk(chunk& chunk, int x, int y) {
                                 else if (type < 13) placeBlockStructure(chunk.blocks, coral_13, i, h, k);
                                 else {
                                     placeBlockStructure(chunk.blocks, coral_14, i, h, k);
-                                }                            
+                                }
                             }
                         }
-                        if (biome == 2) {
+                        if (biome == BIOME_DESERT) {
                             if ((hash2D(i + key.x * CHUNKWIDTH, k + key.y * CHUNKWIDTH, seed) % 100) < 100) {
                                 int type = hash2D(i + key.x * CHUNKWIDTH, k + key.y * CHUNKWIDTH, seed) % 14;
                                 if (type < 1) placeBlockStructure(chunk.blocks, coral_1, i, h, k);
@@ -492,10 +500,10 @@ void initChunk(chunk& chunk, int x, int y) {
     //decoration
     for (int i = 0; i < CHUNKWIDTH; ++i) {
         for (int k = 0; k < CHUNKWIDTH; ++k) {
-            int biome = biomeTemperature(i + key.x * CHUNKWIDTH, k + key.y * CHUNKWIDTH, seed);
+            Biome_e biome = getBiomeTemperature(i + key.x * CHUNKWIDTH, k + key.y * CHUNKWIDTH, seed);
             int h = surfaceLevel[i][k];
             if (h > waterHeight && chunk.blocks[i][h + 1][k] == air) {
-                if (h > waterHeight + 1 && biome == 0) {
+                if (h > waterHeight + 1 && biome == BIOME_PLAINS) {
                     if ((hash2D(i + key.x * CHUNKWIDTH, k + key.y * CHUNKWIDTH, seed) % 100) < 4) {
                         chunk.blocks[i][h + 1][k] = short_grass;
                         continue;
@@ -509,13 +517,13 @@ void initChunk(chunk& chunk, int x, int y) {
                         continue;
                     }
                 }
-                if (h > waterHeight + 1 && biome == 1) {//neige
+                if (h > waterHeight + 1 && biome == BIOME_SNOW) {
                     if ((hash2D(i + key.x * CHUNKWIDTH, k + key.y * CHUNKWIDTH, seed) % 100) < 1) {
                         chunk.blocks[i][h + 1][k] = sweet_berry;
                         continue;
                     }
                 }
-                if (h > waterHeight + 1 && biome == 2) {//desert
+                if (h > waterHeight + 1 && biome == BIOME_DESERT) {
                     if ((hash2D(i + key.x * CHUNKWIDTH, k + key.y * CHUNKWIDTH, seed) % 200) < 1) {
                         chunk.blocks[i][h + 1][k] = dead_bush;
                         continue;
