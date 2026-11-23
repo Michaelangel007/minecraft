@@ -15,7 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Frag.glsl" />
     <None Include="..\data\shaders\CompositeVertex.glsl" />
     <None Include="..\data\shaders\DepthShadowFrag.glsl" />
     <None Include="..\data\shaders\DepthShadowVertex.glsl" />
@@ -25,7 +24,6 @@
     <None Include="..\data\shaders\MainVertex.glsl" />
     <None Include="..\data\shaders\SkyboxFrag.glsl" />
     <None Include="..\data\shaders\SkyboxVertex.glsl" />
-    <None Include="..\Vertex.glsl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\blocks.cpp">
