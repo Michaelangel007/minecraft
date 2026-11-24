@@ -1,5 +1,6 @@
 #pragma once
 #include <stdint.h>
+#include "face.h"
 
 enum Block_e {
       BLOCK_AIR
@@ -34,6 +35,10 @@ enum Block_e {
     , NUM_BLOCKS = 29
 };
 
+extern const int BLOCK_FACE_TO_TILE[NUM_BLOCKS][NUM_FACES];
+
+extern const char* BLOCK_FILENAMES[NUM_BLOCKS];
+
 // There is NOT a 1:1 mapping to render mesh types
 // e.g. transpNoShadowMesh == HAS_NO_SHADOW, IS_SEMI_TRANSPARENT
 enum BlockProperties_e {
@@ -48,37 +53,7 @@ enum BlockProperties_e {
 // IS_UNBREAKABLE
 };
 
-const uint32_t BLOCK_PROPERTIES[ NUM_BLOCKS ] = {
-                IS_SEE_THROUGH                                       // air
-    ,IS_SOLID                                                        // stone
-    ,IS_SOLID                                                        // dirt
-    ,IS_SOLID                                                        // grass
-    ,IS_SOLID                                                        // sand
-    ,IS_SOLID                                                        // snowy_gras
-    ,IS_SOLID | IS_SEE_THROUGH | HAS_NO_SHADOW                       // glass
-    ,IS_SOLID                                                        // diamond
-    ,IS_SOLID                                                        // oka_plank
-    ,IS_SOLID                                                        // oka_log
-    ,           IS_SEE_THROUGH | HAS_WIND_SWAY | IS_DOUBLESIDED      // oka_leaves
-    ,IS_SOLID                                                        // cactus
-    ,IS_SOLID                                                        // spruce_log
-    ,           IS_SEE_THROUGH | HAS_WIND_SWAY | IS_DOUBLESIDED      // spruce_leaves
-    ,           IS_SEE_THROUGH | HAS_NO_SHADOW | IS_SEMI_TRANSPARENT // water
-    ,           IS_SEE_THROUGH | HAS_WIND_SWAY | IS_CROSS_SHAPED     // short grass
-    ,           IS_SEE_THROUGH | HAS_WIND_SWAY | IS_CROSS_SHAPED     // poppy
-    ,           IS_SEE_THROUGH | HAS_WIND_SWAY | IS_CROSS_SHAPED     // dandelion
-    ,           IS_SEE_THROUGH | HAS_WIND_SWAY | IS_CROSS_SHAPED     // dead bush
-    ,           IS_SEE_THROUGH | HAS_WIND_SWAY | IS_CROSS_SHAPED     // sweet berry
-    ,           IS_SEE_THROUGH | HAS_WIND_SWAY | IS_CROSS_SHAPED     // kelp
-    ,IS_SOLID                                                        // gravel
-    ,IS_SOLID                                                        // coal_ore
-    ,IS_SOLID | IS_SEE_THROUGH                                       // ice
-    ,IS_SOLID                                                        // bedrock
-    ,           IS_SEE_THROUGH | HAS_WIND_SWAY | IS_CROSS_SHAPED     // brain_coral_fan
-    ,           IS_SEE_THROUGH | HAS_WIND_SWAY | IS_CROSS_SHAPED     // tube_coral_fan
-    ,IS_SOLID                                                        // fire_coral_block
-    ,IS_SOLID                                                        // tube_coral_block
-};
+extern const uint32_t BLOCK_PROPERTIES[ NUM_BLOCKS ];
 
 inline bool hasProp(int block_id, BlockProperties_e prop) {
     return (BLOCK_PROPERTIES[block_id] & prop) != 0;

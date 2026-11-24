@@ -9,6 +9,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <stb_image.h>
+#include "mesh.h"
 #include "render.hpp"
 
 std::vector<std::string> SkyBoxFaces {
@@ -51,11 +52,6 @@ static unsigned int VAO_SKY;
 static unsigned int VAO_LIGHT;
 static unsigned int cubemapTexture;
 
-static std::vector<Mesh*> opaqueMeshList;
-static std::vector<Mesh*> transpMeshList;
-static std::vector<Mesh*> opaqueNoShadowMeshList;
-static std::vector<Mesh*> transpNoShadowMeshList;
-static std::vector<Mesh*> plantMeshList;
 
 static std::vector<Light*> lightList;
 
@@ -87,54 +83,7 @@ void SetupRender(const char * nom, Camera* cam) {
 }
 
 void terminateRender() {
-    for (Mesh* mesh : opaqueMeshList) {
-        if (mesh != nullptr) {
-            glDeleteVertexArrays(1, &mesh->VAO);
-            glDeleteBuffers(1, &mesh->VBO);
-            GLuint vboNorm = 0; 
-            glDeleteBuffers(1, &vboNorm);
-            delete mesh;
-            mesh = nullptr; 
-        }
-    }
-    opaqueMeshList.clear();
-
-    for (Mesh* mesh : transpMeshList) {
-        if (mesh != nullptr) {
-            glDeleteVertexArrays(1, &mesh->VAO);
-            glDeleteBuffers(1, &mesh->VBO);
-            GLuint vboNorm = 0;
-            glDeleteBuffers(1, &vboNorm);
-            delete mesh;
-            mesh = nullptr;
-        }
-    }
-    transpMeshList.clear();
-
-    for (Mesh* mesh : opaqueNoShadowMeshList) {
-        if (mesh != nullptr) {
-            glDeleteVertexArrays(1, &mesh->VAO);
-            glDeleteBuffers(1, &mesh->VBO);
-            GLuint vboNorm = 0;
-            glDeleteBuffers(1, &vboNorm);
-            delete mesh;
-            mesh = nullptr;
-        }
-    }
-    opaqueNoShadowMeshList.clear();
-
-    for (Mesh* mesh : transpNoShadowMeshList) {
-        if (mesh != nullptr) {
-            glDeleteVertexArrays(1, &mesh->VAO);
-            glDeleteBuffers(1, &mesh->VBO);
-            GLuint vboNorm = 0;
-            glDeleteBuffers(1, &vboNorm);
-            delete mesh;
-            mesh = nullptr;
-        }
-    }
-    transpNoShadowMeshList.clear();
-
+    cleanupMeshes();
     glfwTerminate();
 }
 
@@ -212,48 +161,6 @@ Mesh* setupMeshTexture(std::vector<float> vertices, const glm::vec3& position, b
     return mesh;
 }
 
-void deleteMesh(Mesh* mesh) {
-    if (mesh == nullptr) {
-        return;
-    }
-
-    auto it = std::find(opaqueMeshList.begin(), opaqueMeshList.end(), mesh);
-    if (it != opaqueMeshList.end()) {
-        opaqueMeshList.erase(it);
-    }
-    it = std::find(transpMeshList.begin(), transpMeshList.end(), mesh);
-    if (it != transpMeshList.end()) {
-        transpMeshList.erase(it);
-    }
-    it = std::find(opaqueNoShadowMeshList.begin(), opaqueNoShadowMeshList.end(), mesh);
-    if (it != opaqueNoShadowMeshList.end()) {
-        opaqueNoShadowMeshList.erase(it);
-    }
-    it = std::find(transpNoShadowMeshList.begin(), transpNoShadowMeshList.end(), mesh);
-    if (it != transpNoShadowMeshList.end()) {
-        transpNoShadowMeshList.erase(it);
-    }
-    it = std::find(plantMeshList.begin(), plantMeshList.end(), mesh);
-    if (it != plantMeshList.end()) {
-        plantMeshList.erase(it);
-    }
-
-    glDeleteVertexArrays(1, &(mesh->VAO));
-    glDeleteBuffers(1, &(mesh->VBO));
-    glDeleteBuffers(1, &(mesh->VBONorm));
-
-    if (mesh->enableTexture) {
-        glDeleteTextures(1, &(mesh->texture));
-    }
-
-    mesh->vertices.clear();
-    mesh->vertices.shrink_to_fit();
-    mesh->normales.clear();
-    mesh->normales.shrink_to_fit();
-
-    delete mesh;
-}
-
 
 
 void updateMeshTexture(Mesh* mesh, std::vector<float> vertices) {
@@ -269,8 +176,6 @@ void updateMeshTexture(Mesh* mesh, std::vector<float> vertices) {
 
     glBindVertexArray(0);
 }
-
-
 
 void setMeshPosition(Mesh* mesh,const glm::vec3& position) {
     if (mesh == nullptr) return;
@@ -590,7 +495,7 @@ void renderScene() {
 
     //---BOX LIGHT---
     glUseProgram(shaderLight);
-    bool renderBoxLight = false;
+    bool renderBoxLight = false; // DEBUG
     if (renderBoxLight) {
         for (int i = 0; i < lightList.size(); i++) {
             glm::vec3 boxPos = ((*lightList[i]).type == POINT) ? (*lightList[i]).position : glm::vec3(0.0, 0.0, 0.0) + glm::float32(4.0)*glm::normalize((*lightList[i]).direction);
@@ -811,6 +716,7 @@ void renderSkybox(unsigned int shader, unsigned int VAO, unsigned int cubemapTex
     glDepthFunc(GL_LESS); //fonction de profondeur par defaut
 }
 
+#if 0
 std::vector<float> addNormals(const std::vector<float>& verts) {
     std::vector<float> interleaved;
     interleaved.reserve(verts.size() / 3 * 6); // 3 pos + 3 normal per vertex
@@ -839,6 +745,7 @@ std::vector<float> addNormals(const std::vector<float>& verts) {
 
     return interleaved;
 }
+#endif
 
 unsigned int loadCubemap(std::vector<std::string> faces)
 {

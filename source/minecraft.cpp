@@ -9,6 +9,7 @@
 #include "db_perlin.hpp"
 #include "blocks.h"
 #include "camera.h"
+#include "mesh.h"
 #include "render.hpp"
 #include "structure.h"
 
@@ -19,32 +20,6 @@ enum Biome_e {
     , BIOME_NUM
     , BIOME_NONE = -1
 };
-
-enum Face_e {
-      FACE_E // +X
-    , FACE_N // +Z
-    , FACE_W // -X
-    , FACE_S // -Z
-    , FACE_U // +Y
-    , FACE_D // -Y
-    , NUM_FACES
-    , FACE_NONE = -1
-};
-
-const char *FACE_NAME[NUM_FACES] = {
-      "E (+X)"
-    , "N (+Z)"
-    , "W (-X)"
-    , "S (-Z)"
-    , "U (+Y)"
-    , "D (-Y)"
-};
-
-const char* getFaceName(const Face_e face) {
-    if (face >= NUM_FACES)
-        return "NONE";
-    return FACE_NAME[ face ];
-}
 
 #define CHUNKWIDTH 30
 #define CHUNKHEIGHT 120
@@ -68,156 +43,6 @@ bool flyMode = true;
 float playerHeight = 1.8f;
 int waterHeight = 25;
 int seed = 1;
-
-#define XYZ_INT_TO_FLOAT                    \
-    const float x = static_cast<float>(ix); \
-    const float y = static_cast<float>(iy); \
-    const float z = static_cast<float>(iz); \
-    const float s = 1.0f/static_cast<float>(textureMapWidth);
-
-void addTopFace(vector<float>& mesh, int ix, int iy, int iz, float ou, float ov) {
-    XYZ_INT_TO_FLOAT
-    mesh.insert(mesh.end(), {
-        x, y, z, ou, ov + s,
-        x, y, z + 1, ou + s, ov + s,
-        x + 1, y, z + 1, ou + s, ov,
-        x, y, z, ou, ov + s,
-        x + 1, y, z + 1, ou + s, ov,
-        x + 1, y, z, ou, ov
-        });
-}
-
-void addBottomFace(vector<float>& mesh, int ix, int iy, int iz, float ou, float ov) {
-    XYZ_INT_TO_FLOAT
-    mesh.insert(mesh.end(), {
-        x + 1, y, z, ou, ov + s,
-        x + 1, y, z + 1, ou + s, ov + s,
-        x, y, z + 1, ou + s, ov,
-        x + 1, y, z, ou, ov + s,
-        x, y, z + 1, ou + s, ov,
-        x, y, z, ou, ov
-        });
-}
-
-void addXPosFace(vector<float>& mesh, int ix, int iy, int iz, float ou, float ov) {
-    XYZ_INT_TO_FLOAT
-    mesh.insert(mesh.end(), {
-        x, y, z, ou, ov + s,
-        x, y + 1, z, ou, ov,
-        x, y + 1, z + 1, ou + s, ov,
-        x, y, z, ou, ov + s,
-        x, y + 1, z + 1, ou + s, ov,
-        x, y, z + 1, ou + s, ov + s
-        });
-}
-
-void addXNegFace(vector<float>& mesh, int ix, int iy, int iz, float ou, float ov) {
-    XYZ_INT_TO_FLOAT
-    mesh.insert(mesh.end(), {
-        x, y, z + 1, ou, ov + s,
-        x, y + 1, z + 1, ou, ov,
-        x, y + 1, z, ou + s, ov,
-        x, y, z + 1, ou, ov + s,
-        x, y + 1, z, ou + s, ov,
-        x, y, z, ou + s, ov + s
-        });
-}
-
-void addZPosFace(vector<float>& mesh, int ix, int iy, int iz, float ou, float ov) {
-    XYZ_INT_TO_FLOAT
-    mesh.insert(mesh.end(), {
-        x, y, z, ou, ov + s,
-        x + 1, y, z, ou + s, ov + s,
-        x + 1, y + 1, z, ou + s, ov,
-        x, y, z, ou, ov + s,
-        x + 1, y + 1, z, ou + s, ov,
-        x, y + 1, z, ou, ov
-        });
-}
-
-void addZNegFace(vector<float>& mesh, int ix, int iy, int iz, float ou, float ov) {
-    XYZ_INT_TO_FLOAT
-    mesh.insert(mesh.end(), {
-        x + 1, y, z, ou, ov + s,
-        x, y, z, ou + s, ov + s,
-        x, y + 1, z, ou + s, ov,
-        x + 1, y, z, ou, ov + s,
-        x, y + 1, z, ou + s, ov,
-        x + 1, y + 1, z, ou, ov
-        });
-}
-
-void addPlantFace(vector<float>& mesh, int ix, int iy, int iz, float ou, float ov) {
-    XYZ_INT_TO_FLOAT
-    mesh.insert(mesh.end(), {
-        x-1, y, z, ou, ov + s,
-        x-1, y + 1, z, ou, ov,
-        x, y + 1, z + 1, ou + s, ov,
-        x-1, y, z, ou, ov + s,
-        x, y + 1, z + 1, ou + s, ov,
-        x, y, z + 1, ou + s, ov + s,
-
-        x, y, z, ou, ov + s,
-        x, y + 1, z, ou, ov,
-        x-1, y + 1, z + 1, ou + s, ov,
-        x, y, z, ou, ov + s,
-        x-1, y + 1, z + 1, ou + s, ov,
-        x-1, y, z + 1, ou + s, ov + s,
-
-        x - 1, y + 1, z, ou, ov,
-        x - 1, y, z, ou, ov + s,
-        x, y + 1, z + 1, ou + s, ov,
-        x, y + 1, z + 1, ou + s, ov,
-        x - 1, y, z, ou, ov + s,
-        x, y, z + 1, ou + s, ov + s,
-
-        x, y + 1, z, ou, ov,
-        x, y, z, ou, ov + s,
-        x - 1, y + 1, z + 1, ou + s, ov,
-        x - 1, y + 1, z + 1, ou + s, ov,
-        x, y, z, ou, ov + s,
-        x - 1, y, z + 1, ou + s, ov + s
-        
-    });
-}
-
-// Keys: BlockId, FaceId return the tile index in the texture atlas
-// NOTE: This table can be entirely optimized away if we use a sampler2DArray, and pass z == layer
-// TODO: This really should be built dynamically from the available texture blocks.
-//
-// Face   E    N    W    S    U    D
-//       +X   +Z   -X   -Z   +Y   -Y
-const int BLOCK_FACE_TO_TILE[NUM_BLOCKS][NUM_FACES] = {
-{ 255, 255, 255, 255, 255, 255 } //  0: air
-    , {   0,   0,   0,   0,   0,   0 } //  1: stone
-    , {   3,   3,   3,   3,   3,   3 } //  2: dirt
-    , {   4,   4,   4,   4,   5,   3 } //  3: grass
-    , {  10,  10,  10,  10,  10,  10 } //  4: sand
-    , {  13,  13,  13,  13,  14,   3 } //  5: snowy_grass
-    , {   2,   2,   2,   2,   2,   2 } //  6: glass
-    , {   6,   6,   6,   6,   6,   6 } //  7: diamond_ore
-    , {   1,   1,   1,   1,   1,   1 } //  8: oak_planks
-    , {   8,   8,   8,   8,   9,   9 } //  9: oak_log
-    , {   7,   7,   7,   7,   7,   7 } // 10: oak_leaves
-    , {  16,  16,  16,  16,  17,  17 } // 11: cactus
-    , {  18,  18,  18,  18,  19,  19 } // 12: spruce_log
-    , {  20,  20,  20,  20,  20,  20 } // 13: spruce_leaves
-    , {  12,  12,  12,  12,  12,  12 } // 14: water
-    , {  21,  21,  21,  21,  21,  21 } // 15: short_grass
-    , {  22,  22,  22,  22,  22,  22 } // 16: poppy
-    , {  23,  23,  23,  23,  23,  23 } // 17: dandelion
-    , {  24,  24,  24,  24,  24,  24 } // 18: dead_bush
-    , {  25,  25,  25,  25,  25,  25 } // 19: sweet_berry
-    , {  27,  27,  27,  27,  27,  27 } // 20: kelp
-    , {  11,  11,  11,  11,  11,  11 } // 21: gravel
-    , {  15,  15,  15,  15,  15,  15 } // 22: coal_ore
-    , {  26,  26,  26,  26,  26,  26 } // 23: ice
-    , {  29,  29,  29,  29,  29,  29 } // 24: bedrock
-    , {  30,  30,  30,  30,  30,  30 } // 25: brain_coral_fan  FAN
-    , {  31,  31,  31,  31,  31,  31 } // 26: tube_coral_fan   FAN
-    , {  32,  32,  32,  32,  32,  32 } // 27: fire_coral_block BLOCK
-    , {  33,  33,  33,  33,  33,  33 } // 28: tube_coral_block BLOCK
-};
 
 struct FaceUV_t {
     float u;

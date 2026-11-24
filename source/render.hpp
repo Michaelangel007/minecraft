@@ -11,24 +11,7 @@
 // Forward declarations des classes utilisées
 class Camera;
 struct Light;
-
-// Structure Mesh
-struct Mesh {
-    unsigned int VAO;
-    unsigned int VBO;
-    unsigned int VBONorm;
-    //unsigned int VBOText;
-    unsigned int texture;
-    std::vector<float> vertices;
-    std::vector<float> normales;
-    //std::vector<float> text;
-    glm::mat4 model;
-
-    glm::vec4 color;
-    float ambianteLightMult;
-    int shininess;
-    bool enableTexture;
-};
+struct Mesh;
 
 enum LightType {
     DIRECTIONAL, // 0

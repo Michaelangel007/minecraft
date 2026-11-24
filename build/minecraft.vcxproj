@@ -147,6 +147,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\blocks.cpp" />
+    <ClCompile Include="..\source\face.cpp" />
+    <ClCompile Include="..\source\mesh.cpp" />
     <ClCompile Include="..\source\minecraft.cpp" />
     <ClCompile Include="..\source\render.cpp" />
     <ClCompile Include="..\source\structure.cpp" />
@@ -155,6 +157,8 @@
     <ClInclude Include="..\source\blocks.h" />
     <ClInclude Include="..\source\camera.h" />
     <ClInclude Include="..\source\db_perlin.hpp" />
+    <ClInclude Include="..\source\face.h" />
+    <ClInclude Include="..\source\mesh.h" />
     <ClInclude Include="..\source\render.hpp" />
     <ClInclude Include="..\stb\stb_image.h" />
     <ClInclude Include="..\source\structure.h" />
