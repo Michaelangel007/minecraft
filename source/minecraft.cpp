@@ -53,7 +53,7 @@ FaceUV_t getFaceUV(int block, Face_e face) {
     assert(block < NUM_BLOCKS);
     assert(face < NUM_FACES);
 
-    assert(block > air); // Catch if air is siliently / accidently passed in
+    assert(block > BLOCK_AIR); // Catch if air is siliently / accidently passed in
     assert(face >= FACE_E);
 
     int textureCo =  BLOCK_FACE_TO_TILE[ block ][ face ];
