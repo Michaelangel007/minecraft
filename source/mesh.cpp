@@ -1,10 +1,6 @@
 #include "mesh.h"
 
-std::vector<Mesh*> opaqueMeshList;
-std::vector<Mesh*> transpMeshList;
-std::vector<Mesh*> opaqueNoShadowMeshList;
-std::vector<Mesh*> transpNoShadowMeshList;
-std::vector<Mesh*> plantMeshList;
+MeshList_t gMeshList[ NUM_MESH_TYPES ];
 
 #define XYZ_INT_TO_FLOAT                    \
     const float x = static_cast<float>(ix); \
@@ -148,11 +144,9 @@ void cleanupMeshList(std::vector<Mesh*>& meshList) {
 }
 
 void cleanupMeshes() {
-    cleanupMeshList(opaqueMeshList);
-    cleanupMeshList(transpMeshList);
-    cleanupMeshList(opaqueNoShadowMeshList);
-    cleanupMeshList(transpNoShadowMeshList);
-    cleanupMeshList(plantMeshList);
+    for (int iMesh = 0; iMesh < NUM_MESH_TYPES; iMesh++) {
+        cleanupMeshList( gMeshList[ iMesh ] );
+    }
 }
 
 void deleteMesh(Mesh* mesh) {
@@ -160,29 +154,12 @@ void deleteMesh(Mesh* mesh) {
         return;
     }
 
-    auto it = std::find(opaqueMeshList.begin(), opaqueMeshList.end(), mesh);
-    if (it != opaqueMeshList.end()) {
-        opaqueMeshList.erase(it);
-    }
-
-    it = std::find(transpMeshList.begin(), transpMeshList.end(), mesh);
-    if (it != transpMeshList.end()) {
-        transpMeshList.erase(it);
-    }
-
-    it = std::find(opaqueNoShadowMeshList.begin(), opaqueNoShadowMeshList.end(), mesh);
-    if (it != opaqueNoShadowMeshList.end()) {
-        opaqueNoShadowMeshList.erase(it);
-    }
-
-    it = std::find(transpNoShadowMeshList.begin(), transpNoShadowMeshList.end(), mesh);
-    if (it != transpNoShadowMeshList.end()) {
-        transpNoShadowMeshList.erase(it);
-    }
-
-    it = std::find(plantMeshList.begin(), plantMeshList.end(), mesh);
-    if (it != plantMeshList.end()) {
-        plantMeshList.erase(it);
+    for (int iMesh = 0; iMesh < NUM_MESH_TYPES; iMesh++) {
+        MeshList_t *pMeshes = &gMeshList[ iMesh ];
+        auto it = std::find(pMeshes->begin(), pMeshes->end(), mesh);
+        if (it != pMeshes->end()) {
+            pMeshes->erase(it);
+        }
     }
 
     cleanupMesh(mesh);

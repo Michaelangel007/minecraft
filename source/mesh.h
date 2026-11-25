@@ -21,11 +21,18 @@ struct Mesh {
     bool enableTexture;
 };
 
-extern std::vector<Mesh*> opaqueMeshList;
-extern std::vector<Mesh*> transpMeshList;
-extern std::vector<Mesh*> opaqueNoShadowMeshList;
-extern std::vector<Mesh*> transpNoShadowMeshList;
-extern std::vector<Mesh*> plantMeshList;
+typedef std::vector<Mesh*> MeshList_t;
+
+enum MeshType_e
+{
+      MESH_TYPE_OPAQUE_WITH_SHADOWS
+    , MESH_TYPE_OPAQUE_SANS_SHADOWS
+    , MESH_TYPE_TRANSPARENT_WITH_SHADOWS
+    , MESH_TYPE_TRANSPARENT_SANS_SHADOWS
+    , MESH_TYPE_PLANT
+    , NUM_MESH_TYPES
+};
+extern MeshList_t gMeshList[ NUM_MESH_TYPES ];
 
 extern int textureMapWidth;
 

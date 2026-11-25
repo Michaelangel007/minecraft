@@ -121,7 +121,7 @@ void setMeshTextureFile(Mesh* mesh, const char* path) {
     stbi_image_free(data);
 }
 
-Mesh* setupMeshTexture(std::vector<float> vertices, const glm::vec3& position, bool transp, bool shadow, bool plant) {
+Mesh* setupMeshTexture(std::vector<float> vertices, const glm::vec3& position, bool IsTransparent, bool IsShadow, bool IsPlant) {
     Mesh* mesh = new Mesh();
     mesh->vertices = vertices;
     glGenVertexArrays(1, &mesh->VAO);
@@ -153,11 +153,12 @@ Mesh* setupMeshTexture(std::vector<float> vertices, const glm::vec3& position, b
     mesh->shininess = 32;
     mesh->ambianteLightMult = 0.8f;
     mesh->enableTexture = true;
-    if (plant) plantMeshList.push_back(mesh);
-    else if (!transp && shadow) opaqueMeshList.push_back(mesh);
-    else if (transp && shadow) transpMeshList.push_back(mesh);
-    else if (!transp && !shadow) opaqueNoShadowMeshList.push_back(mesh);
-    else if (transp && !shadow) transpNoShadowMeshList.push_back(mesh);
+
+         if ( IsPlant                   ) gMeshList[ MESH_TYPE_PLANT                    ].push_back(mesh);
+    else if (!IsTransparent &&  IsShadow) gMeshList[ MESH_TYPE_OPAQUE_WITH_SHADOWS      ].push_back(mesh);
+    else if ( IsTransparent &&  IsShadow) gMeshList[ MESH_TYPE_TRANSPARENT_WITH_SHADOWS ].push_back(mesh);
+    else if (!IsTransparent && !IsShadow) gMeshList[ MESH_TYPE_OPAQUE_SANS_SHADOWS      ].push_back(mesh);
+    else if ( IsTransparent && !IsShadow) gMeshList[ MESH_TYPE_TRANSPARENT_SANS_SHADOWS ].push_back(mesh);
     return mesh;
 }
 
@@ -317,6 +318,9 @@ void renderScene() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glBindVertexArray(0);
 
+    MeshType_e  meshType;
+    MeshList_t *pMeshes;
+
     //calculating shadow
     int parityFrameShadowRender = 1; //min 1, max =~ 2
     glUseProgram(shaderProgramDepth);
@@ -329,25 +333,39 @@ void renderScene() {
             glClear(GL_DEPTH_BUFFER_BIT);
             glUniform1i(glGetUniformLocation(shaderProgramDepth, "enableTexture"), 0);
 
-            for (int i = 0; i < opaqueMeshList.size(); i++) {
-                glUniformMatrix4fv(glGetUniformLocation(shaderProgramDepth, "model"), 1, GL_FALSE, glm::value_ptr(glm::translate((*opaqueMeshList[i]).model, -camera.Position)));
-                glBindVertexArray((*opaqueMeshList[i]).VAO);
-                glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(opaqueMeshList[i]->vertices.size() / 3));
+            meshType = MESH_TYPE_OPAQUE_WITH_SHADOWS;
+            pMeshes = &gMeshList[ meshType ];
+            for (size_t i = 0; i < pMeshes->size(); i++) {
+                Mesh *pMesh = (*pMeshes)[i];
+
+                glUniformMatrix4fv(glGetUniformLocation(shaderProgramDepth, "model"), 1, GL_FALSE, glm::value_ptr(glm::translate(pMesh->model, -camera.Position)));
+                glBindVertexArray(pMesh->VAO);
+                glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(pMesh->vertices.size() / 3));
             }
-            for (int i = 0; i < transpMeshList.size(); i++) {
-                glUniformMatrix4fv(glGetUniformLocation(shaderProgramDepth, "model"), 1, GL_FALSE, glm::value_ptr(glm::translate((*transpMeshList[i]).model, -camera.Position)));
-                glBindVertexArray((*transpMeshList[i]).VAO);
-                glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(transpMeshList[i]->vertices.size() / 3));
+
+            meshType = MESH_TYPE_TRANSPARENT_WITH_SHADOWS;
+            pMeshes = &gMeshList[ meshType ];
+            for (size_t i = 0; i < pMeshes->size(); i++) {
+                Mesh *pMesh = (*pMeshes)[i];
+
+                glUniformMatrix4fv(glGetUniformLocation(shaderProgramDepth, "model"), 1, GL_FALSE, glm::value_ptr(glm::translate(pMesh->model, -camera.Position)));
+                glBindVertexArray(pMesh->VAO);
+                glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(pMesh->vertices.size() / 3));
             }
-            for (int i = 0; i < plantMeshList.size(); i++) {
+
+            meshType = MESH_TYPE_PLANT;
+            pMeshes = &gMeshList[ meshType ];
+            for (int i = 0; i < pMeshes->size(); i++) {
+                Mesh *pMesh = (*pMeshes)[i];
+
                 glActiveTexture(GL_TEXTURE0 + 0);
-                glBindTexture(GL_TEXTURE_2D, (*plantMeshList[i]).texture);
+                glBindTexture(GL_TEXTURE_2D, pMesh->texture);
                 glUniform1i(glGetUniformLocation(shaderProgramDepth, "text"), 0);
                 glUniform1i(glGetUniformLocation(shaderProgramDepth, "enableTexture"), 1);
 
-                glUniformMatrix4fv(glGetUniformLocation(shaderProgramDepth, "model"), 1, GL_FALSE, glm::value_ptr(glm::translate((*plantMeshList[i]).model, -camera.Position)));
-                glBindVertexArray((*plantMeshList[i]).VAO);
-                glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(plantMeshList[i]->vertices.size() / 3));
+                glUniformMatrix4fv(glGetUniformLocation(shaderProgramDepth, "model"), 1, GL_FALSE, glm::value_ptr(glm::translate(pMesh->model, -camera.Position)));
+                glBindVertexArray(pMesh->VAO);
+                glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(pMesh->vertices.size() / 3));
             }
         }
     }
@@ -404,92 +422,112 @@ void renderScene() {
 
     const int TextureIndex = shadowIndex;
 
-    for (int i = 0; i < opaqueMeshList.size(); i++) {
-        glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(glm::translate((*opaqueMeshList[i]).model, -camera.Position) ));
-        glUniform4fv(glGetUniformLocation(shaderProgram, "mat.color"), 1, glm::value_ptr((*opaqueMeshList[i]).color));
-        glUniform1i(glGetUniformLocation(shaderProgram, "mat.shininess"), (*opaqueMeshList[i]).shininess);
-        glUniform1f(glGetUniformLocation(shaderProgram, "mat.ambianteLightMult"), (*opaqueMeshList[i]).ambianteLightMult);
+    meshType = MESH_TYPE_OPAQUE_WITH_SHADOWS;
+    pMeshes = &gMeshList[meshType];
+    for (size_t i = 0; i < pMeshes->size(); i++) {
+        Mesh *pMesh = (*pMeshes)[i];
+
+        glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(glm::translate(pMesh->model, -camera.Position) ));
+        glUniform4fv(glGetUniformLocation(shaderProgram, "mat.color"), 1, glm::value_ptr(pMesh->color));
+        glUniform1i(glGetUniformLocation(shaderProgram, "mat.shininess"), pMesh->shininess);
+        glUniform1f(glGetUniformLocation(shaderProgram, "mat.ambianteLightMult"), pMesh->ambianteLightMult);
         glUniform1i(glGetUniformLocation(shaderProgram, "mat.enableTexture"), 0);
-        if (opaqueMeshList[i]->enableTexture) {
+        if (pMesh->enableTexture) {
             glActiveTexture(GL_TEXTURE0 + TextureIndex);
-            glBindTexture(GL_TEXTURE_2D, opaqueMeshList[i]->texture);
+            glBindTexture(GL_TEXTURE_2D, pMesh->texture);
             glUniform1i(glGetUniformLocation(shaderProgram, "mat.text"), TextureIndex);
             glUniform1i(glGetUniformLocation(shaderProgram, "mat.enableTexture"), 1);
         }
         glUniform1i(glGetUniformLocation(shaderProgram, "enableWind"), 0);
-        glBindVertexArray((*opaqueMeshList[i]).VAO);
-        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(opaqueMeshList[i]->vertices.size() / 3));
+        glBindVertexArray(pMesh->VAO);
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(pMesh->vertices.size() / 3));
     }
-    for (int i = 0; i < opaqueNoShadowMeshList.size(); i++) {
-        glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(glm::translate((*opaqueNoShadowMeshList[i]).model, -camera.Position)));
-        glUniform4fv(glGetUniformLocation(shaderProgram, "mat.color"), 1, glm::value_ptr((*opaqueNoShadowMeshList[i]).color));
-        glUniform1i(glGetUniformLocation(shaderProgram, "mat.shininess"), (*opaqueNoShadowMeshList[i]).shininess);
-        glUniform1f(glGetUniformLocation(shaderProgram, "mat.ambianteLightMult"), (*opaqueNoShadowMeshList[i]).ambianteLightMult);
+
+    meshType = MESH_TYPE_OPAQUE_SANS_SHADOWS;
+    pMeshes = &gMeshList[meshType];
+    for (size_t i = 0; i < pMeshes->size(); i++) {
+        Mesh *pMesh = (*pMeshes)[i];
+        glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(glm::translate(pMesh->model, -camera.Position)));
+        glUniform4fv(glGetUniformLocation(shaderProgram, "mat.color"), 1, glm::value_ptr(pMesh->color));
+        glUniform1i(glGetUniformLocation(shaderProgram, "mat.shininess"), pMesh->shininess);
+        glUniform1f(glGetUniformLocation(shaderProgram, "mat.ambianteLightMult"), pMesh->ambianteLightMult);
         glUniform1i(glGetUniformLocation(shaderProgram, "mat.enableTexture"), 0);
-        if (opaqueNoShadowMeshList[i]->enableTexture) {
+        if (pMesh->enableTexture) {
             glActiveTexture(GL_TEXTURE0 + TextureIndex);
-            glBindTexture(GL_TEXTURE_2D, (*opaqueNoShadowMeshList[i]).texture);
+            glBindTexture(GL_TEXTURE_2D, pMesh->texture);
             glUniform1i(glGetUniformLocation(shaderProgram, "mat.text"), TextureIndex);
             glUniform1i(glGetUniformLocation(shaderProgram, "mat.enableTexture"), 1);
         }
         glUniform1i(glGetUniformLocation(shaderProgram, "enableWind"), 0);
-        glBindVertexArray((*opaqueNoShadowMeshList[i]).VAO);
-        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(opaqueNoShadowMeshList[i]->vertices.size() / 3));
+        glBindVertexArray(pMesh->VAO);
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(pMesh->vertices.size() / 3));
     }
-    for (int i = 0; i < plantMeshList.size(); i++) {
+
+    meshType = MESH_TYPE_PLANT;
+    pMeshes = &gMeshList[meshType];
+    for (int i = 0; i < pMeshes->size(); i++) {
+        Mesh *pMesh = (*pMeshes)[i];
         glUniform1i(glGetUniformLocation(shaderProgram, "enableWind"), 1);
         glUniform1f(glGetUniformLocation(shaderProgram, "time"), static_cast<GLfloat>(glfwGetTime()));
         glUniform1f(glGetUniformLocation(shaderProgram, "windStrength"), 0.4f);
         glUniform3f(glGetUniformLocation(shaderProgram, "windDirection"), 1.0f, 0.0f, 0.5f);
 
-        glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(glm::translate((*plantMeshList[i]).model, -camera.Position)));
-        glUniform4fv(glGetUniformLocation(shaderProgram, "mat.color"), 1, glm::value_ptr((*plantMeshList[i]).color));
-        glUniform1i(glGetUniformLocation(shaderProgram, "mat.shininess"), (*plantMeshList[i]).shininess);
-        glUniform1f(glGetUniformLocation(shaderProgram, "mat.ambianteLightMult"), (*plantMeshList[i]).ambianteLightMult);
+        glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(glm::translate(pMesh->model, -camera.Position)));
+        glUniform4fv(glGetUniformLocation(shaderProgram, "mat.color"), 1, glm::value_ptr(pMesh->color));
+        glUniform1i(glGetUniformLocation(shaderProgram, "mat.shininess"), pMesh->shininess);
+        glUniform1f(glGetUniformLocation(shaderProgram, "mat.ambianteLightMult"), pMesh->ambianteLightMult);
         glUniform1i(glGetUniformLocation(shaderProgram, "mat.enableTexture"), 0);
-        if (plantMeshList[i]->enableTexture) {
+        if (pMesh->enableTexture) {
             glActiveTexture(GL_TEXTURE0 + TextureIndex);
-            glBindTexture(GL_TEXTURE_2D, (*plantMeshList[i]).texture);
+            glBindTexture(GL_TEXTURE_2D, pMesh->texture);
             glUniform1i(glGetUniformLocation(shaderProgram, "mat.text"), TextureIndex);
             glUniform1i(glGetUniformLocation(shaderProgram, "mat.enableTexture"), 1);
         }
-        glBindVertexArray((*plantMeshList[i]).VAO);
-        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(plantMeshList[i]->vertices.size() / 3));
+        glBindVertexArray(pMesh->VAO);
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(pMesh->vertices.size() / 3));
     }
 
 
     glDepthMask(GL_FALSE);
-    for (int i = 0; i < transpMeshList.size(); i++) {
-        glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(glm::translate((*transpMeshList[i]).model, -camera.Position)));
-        glUniform4fv(glGetUniformLocation(shaderProgram, "mat.color"), 1, glm::value_ptr((*transpMeshList[i]).color));
-        glUniform1i(glGetUniformLocation(shaderProgram, "mat.shininess"), (*transpMeshList[i]).shininess);
-        glUniform1f(glGetUniformLocation(shaderProgram, "mat.ambianteLightMult"), (*transpMeshList[i]).ambianteLightMult);
+
+    meshType = MESH_TYPE_TRANSPARENT_WITH_SHADOWS;
+    pMeshes = &gMeshList[meshType];
+    for (size_t i = 0; i < pMeshes->size(); i++) {
+        Mesh *pMesh = (*pMeshes)[i];
+        glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(glm::translate(pMesh->model, -camera.Position)));
+        glUniform4fv(glGetUniformLocation(shaderProgram, "mat.color"), 1, glm::value_ptr(pMesh->color));
+        glUniform1i(glGetUniformLocation(shaderProgram, "mat.shininess"), pMesh->shininess);
+        glUniform1f(glGetUniformLocation(shaderProgram, "mat.ambianteLightMult"), pMesh->ambianteLightMult);
         glUniform1i(glGetUniformLocation(shaderProgram, "mat.enableTexture"), 0);
-        if (transpMeshList[i]->enableTexture) {
+        if (pMesh->enableTexture) {
             glActiveTexture(GL_TEXTURE0 + TextureIndex);
-            glBindTexture(GL_TEXTURE_2D, (*transpMeshList[i]).texture);
+            glBindTexture(GL_TEXTURE_2D, pMesh->texture);
             glUniform1i(glGetUniformLocation(shaderProgram, "mat.text"), TextureIndex);
             glUniform1i(glGetUniformLocation(shaderProgram, "mat.enableTexture"), 1);
         }
         glUniform1i(glGetUniformLocation(shaderProgram, "enableWind"), 0);
-        glBindVertexArray((*transpMeshList[i]).VAO);
-        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(transpMeshList[i]->vertices.size() / 3));
+        glBindVertexArray(pMesh->VAO);
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(pMesh->vertices.size() / 3));
     }
-    for (int i = 0; i < transpNoShadowMeshList.size(); i++) {
-        glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(glm::translate((*transpNoShadowMeshList[i]).model, -camera.Position)));
-        glUniform4fv(glGetUniformLocation(shaderProgram, "mat.color"), 1, glm::value_ptr((*transpNoShadowMeshList[i]).color));
-        glUniform1i(glGetUniformLocation(shaderProgram, "mat.shininess"), (*transpNoShadowMeshList[i]).shininess);
-        glUniform1f(glGetUniformLocation(shaderProgram, "mat.ambianteLightMult"), (*transpNoShadowMeshList[i]).ambianteLightMult);
+
+    meshType = MESH_TYPE_TRANSPARENT_SANS_SHADOWS;
+    pMeshes = &gMeshList[meshType];
+    for (int i = 0; i < pMeshes->size(); i++) {
+        Mesh *pMesh = (*pMeshes)[i];
+        glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(glm::translate(pMesh->model, -camera.Position)));
+        glUniform4fv(glGetUniformLocation(shaderProgram, "mat.color"), 1, glm::value_ptr(pMesh->color));
+        glUniform1i(glGetUniformLocation(shaderProgram, "mat.shininess"), pMesh->shininess);
+        glUniform1f(glGetUniformLocation(shaderProgram, "mat.ambianteLightMult"), pMesh->ambianteLightMult);
         glUniform1i(glGetUniformLocation(shaderProgram, "mat.enableTexture"), 0);
-        if (transpNoShadowMeshList[i]->enableTexture) {
+        if (pMesh->enableTexture) {
             glActiveTexture(GL_TEXTURE0 + TextureIndex);
-            glBindTexture(GL_TEXTURE_2D, (*transpNoShadowMeshList[i]).texture);
+            glBindTexture(GL_TEXTURE_2D, pMesh->texture);
             glUniform1i(glGetUniformLocation(shaderProgram, "mat.text"), TextureIndex);
             glUniform1i(glGetUniformLocation(shaderProgram, "mat.enableTexture"), 1);
         }
         glUniform1i(glGetUniformLocation(shaderProgram, "enableWind"), 0);
-        glBindVertexArray((*transpNoShadowMeshList[i]).VAO);
-        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(transpNoShadowMeshList[i]->vertices.size() / 3));
+        glBindVertexArray(pMesh->VAO);
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(pMesh->vertices.size() / 3));
     }
     glDepthMask(GL_TRUE);
 
