@@ -40,36 +40,38 @@ const int BLOCK_FACE_TO_TILE[NUM_BLOCKS][NUM_FACES] = {
 };
 
 const char* BLOCK_FILENAMES[NUM_BLOCKS] = {
-    NULL,                      // BLOCK_AIR
-    "stone",                   // BLOCK_STONE
-    "dirt"                     // BLOCK_DIRT  3: grass_block_side + grass_block_top + dirt (v3.3)
-    "grass_block_side",        // BLOCK_GRASS
-    "sand",                    // BLOCK_SAND
-    "grass_block_snow",        // BLOCK_GRASS_SNOWY  3: grass_block_snow + snow + dirt
-    "glass",                   // BLOCK_GLASS
-    "diamond_ore",             // BLOCK_ORE_DIAMOND
-    "oak_planks",              // BLOCK_OAK_PLANK
-    "oak_log",                 // BLOCK_OAK_LOG  2: oak_log, oak_log_top
-    "leaves_oak",              // BLOCK_OAK_LEAVES
-    "cactus_side",             // BLOCK_PLANT_CACTUS 3: cactus_side + cactus_top + cactus_top
-    "spruce_log",              // BLOCK_SPRUCE_LOG  2: spruce_log + spruce_log_top
-    "spruce_leaves",           // BLOCK_SPRUCE_LEAVES
-    NULL,                      // BLOCK_WATER (missing texture)
-    "short_grass",             // BLOCK_GRASS_SHORT (also see tallgrass)
-    "poppy",                   // BLOCK_FLOWER_POPPY
-    "flower_dandelion",        // BLOCK_FLOWER_DANDELION
-    "deadbush",                // BLOCK_DEAD_BUSH
-    "sweet_berry_bush_stage3", // BLOCK_PLANT_SWEET_BERRY
-    "kelp"                     // BLOCK_PLANT_KELP -- ANIMATED
-    "gravel",                  // BLOCK_GRAVEL
-    "coal_ore",                // BLOCK_ORE_COAL
-    "ice",                     // BLOCK_ICE
-    "bedrock",                 // BLOCK_BEDROCK (v3.3)
-    "brain_coral",             // BLOCK_CORAL_BRAIN_FAN
-    "tube_coral_fan",          // BLOCK_CORAL_TUBE_FAN
-    "fire_coral_block",        // BLOCK_CORAL_FIRE_BLOCK
-    "tube_coral_block"         // BLOCK_CORAL_TUBE_BLOCK
+      NULL                      // BLOCK_AIR
+    , "stone"                   // BLOCK_STONE
+    , "dirt"                    // BLOCK_DIRT  3: grass_block_side + grass_block_top + dirt (v3.3)
+    , "grass_block_side"        // BLOCK_GRASS
+    , "sand"                    // BLOCK_SAND
+    , "grass_block_snow"        // BLOCK_GRASS_SNOWY  3: grass_block_snow + snow + dirt
+    , "glass"                   // BLOCK_GLASS
+    , "diamond_ore"             // BLOCK_ORE_DIAMOND
+    , "oak_planks"              // BLOCK_OAK_PLANK
+    , "oak_log"                 // BLOCK_OAK_LOG  2: oak_log, oak_log_top
+    , "leaves_oak"              // BLOCK_OAK_LEAVES
+    , "cactus_side"             // BLOCK_PLANT_CACTUS 3: cactus_side + cactus_top + cactus_top
+    , "spruce_log"              // BLOCK_SPRUCE_LOG  2: spruce_log + spruce_log_top
+    , "spruce_leaves"           // BLOCK_SPRUCE_LEAVES
+    , NULL                      // BLOCK_WATER (missing texture)
+    , "short_grass"             // BLOCK_GRASS_SHORT (also see tallgrass)
+    , "poppy"                   // BLOCK_FLOWER_POPPY
+    , "flower_dandelion"        // BLOCK_FLOWER_DANDELION
+    , "deadbush"                // BLOCK_DEAD_BUSH
+    , "sweet_berry_bush_stage3" // BLOCK_PLANT_SWEET_BERRY
+    , "kelp"                    // BLOCK_PLANT_KELP -- ANIMATED
+    , "gravel"                  // BLOCK_GRAVEL
+    , "coal_ore"                // BLOCK_ORE_COAL
+    , "ice"                     // BLOCK_ICE
+    , "bedrock"                 // BLOCK_BEDROCK (v3.3)
+    , "brain_coral"             // BLOCK_CORAL_BRAIN_FAN
+    , "tube_coral_fan"          // BLOCK_CORAL_TUBE_FAN
+    , "fire_coral_block"        // BLOCK_CORAL_FIRE_BLOCK
+    , "tube_coral_block"        // BLOCK_CORAL_TUBE_BLOCK
 };
+static_assert(sizeof(BLOCK_FILENAMES) / sizeof(BLOCK_FILENAMES[0]) == NUM_BLOCKS,
+              "BLOCK_FILENAMES[ size ] != NUM_BLOCKS");
 
 const uint32_t BLOCK_PROPERTIES[ NUM_BLOCKS ] = {
                 IS_SEE_THROUGH                                       // air
