@@ -123,11 +123,6 @@ void cleanupMesh(Mesh* mesh) {
     glDeleteBuffers(1, &mesh->VBO);
     glDeleteBuffers(1, &mesh->VBONorm);
 
-    if (mesh->enableTexture && mesh->texture) {
-        glDeleteTextures(1, &(mesh->texture));
-        mesh->texture = 0;
-    }
-
     mesh->VAO = 0;
     mesh->VBO = 0;
     mesh->VBONorm = 0;

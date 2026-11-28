@@ -12,6 +12,8 @@
 #include "mesh.h"
 #include "render.hpp"
 
+GLuint hTextureAtlas = 0;
+
 std::vector<std::string> SkyBoxFaces {
     "data/skybox/px.jpg", // right
     "data/skybox/nx.jpg", // left
@@ -87,40 +89,45 @@ void terminateRender() {
     glfwTerminate();
 }
 
-
+// TODO: Should NOT be loading a texture file on EVERY mesh creation
 void setMeshTextureFile(Mesh* mesh, const char* path) {
-    const int pixelArtMaxSize = 254;
-    glGenTextures(1, &(mesh->texture));
-    glBindTexture(GL_TEXTURE_2D, (mesh->texture));
+    if (!hTextureAtlas) {
+        const int pixelArtMaxSize = 254;
+        glGenTextures(1, &hTextureAtlas);
+        glBindTexture(GL_TEXTURE_2D, hTextureAtlas);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-    int width, height, nrChannels;
-    unsigned char* data = stbi_load(path, &width, &height, &nrChannels, 4); //force le 4 channels
-    if (data) {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        int width, height, nrChannels;
+        unsigned char* data = stbi_load(path, &width, &height, &nrChannels, 4); //force le 4 channels
+        if (data) {
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 
-        bool isPixelArt = (width <= pixelArtMaxSize && height <= pixelArtMaxSize);
-        if (isPixelArt) {
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        }else {
-            glGenerateMipmap(GL_TEXTURE_2D);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            bool isPixelArt = (width <= pixelArtMaxSize && height <= pixelArtMaxSize);
+            if (isPixelArt) {
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            }else {
+                glGenerateMipmap(GL_TEXTURE_2D);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            }
+            std::cout << "Texture: " << path << " loaded with " << nrChannels << " channels" << std::endl;
         }
-        mesh->enableTexture = true;
-        //std::cout << path << " loaded with " << nrChannels << " channels" << std::endl;
+        else {
+            std::cout << "Failed to load texture : " << path << std::endl;
+        }
+        stbi_image_free(data);
     }
-    else {
-        std::cout << "Failed to load texture : " << path << std::endl;
-    }
-    stbi_image_free(data);
+
+    mesh->enableTexture = true;
+    mesh->hTextureId = hTextureAtlas;
 }
 
+// TODO: Should NOT be allocating a new mesh, should be using object pooling
 Mesh* setupMeshTexture(std::vector<float> vertices, const glm::vec3& position, bool IsTransparent, bool IsShadow, bool IsPlant) {
     Mesh* mesh = new Mesh();
     mesh->vertices = vertices;
@@ -161,8 +168,6 @@ Mesh* setupMeshTexture(std::vector<float> vertices, const glm::vec3& position, b
     else if ( IsTransparent && !IsShadow) gMeshList[ MESH_TYPE_TRANSPARENT_SANS_SHADOWS ].push_back(mesh);
     return mesh;
 }
-
-
 
 void updateMeshTexture(Mesh* mesh, std::vector<float> vertices) {
     mesh->vertices = vertices;
@@ -359,7 +364,7 @@ void renderScene() {
                 Mesh *pMesh = (*pMeshes)[i];
 
                 glActiveTexture(GL_TEXTURE0 + 0);
-                glBindTexture(GL_TEXTURE_2D, pMesh->texture);
+                glBindTexture(GL_TEXTURE_2D, pMesh->hTextureId);
                 glUniform1i(glGetUniformLocation(shaderProgramDepth, "text"), 0);
                 glUniform1i(glGetUniformLocation(shaderProgramDepth, "enableTexture"), 1);
 
@@ -434,7 +439,7 @@ void renderScene() {
         glUniform1i(glGetUniformLocation(shaderProgram, "mat.enableTexture"), 0);
         if (pMesh->enableTexture) {
             glActiveTexture(GL_TEXTURE0 + TextureIndex);
-            glBindTexture(GL_TEXTURE_2D, pMesh->texture);
+            glBindTexture(GL_TEXTURE_2D, pMesh->hTextureId);
             glUniform1i(glGetUniformLocation(shaderProgram, "mat.text"), TextureIndex);
             glUniform1i(glGetUniformLocation(shaderProgram, "mat.enableTexture"), 1);
         }
@@ -454,7 +459,7 @@ void renderScene() {
         glUniform1i(glGetUniformLocation(shaderProgram, "mat.enableTexture"), 0);
         if (pMesh->enableTexture) {
             glActiveTexture(GL_TEXTURE0 + TextureIndex);
-            glBindTexture(GL_TEXTURE_2D, pMesh->texture);
+            glBindTexture(GL_TEXTURE_2D, pMesh->hTextureId);
             glUniform1i(glGetUniformLocation(shaderProgram, "mat.text"), TextureIndex);
             glUniform1i(glGetUniformLocation(shaderProgram, "mat.enableTexture"), 1);
         }
@@ -479,7 +484,7 @@ void renderScene() {
         glUniform1i(glGetUniformLocation(shaderProgram, "mat.enableTexture"), 0);
         if (pMesh->enableTexture) {
             glActiveTexture(GL_TEXTURE0 + TextureIndex);
-            glBindTexture(GL_TEXTURE_2D, pMesh->texture);
+            glBindTexture(GL_TEXTURE_2D, pMesh->hTextureId);
             glUniform1i(glGetUniformLocation(shaderProgram, "mat.text"), TextureIndex);
             glUniform1i(glGetUniformLocation(shaderProgram, "mat.enableTexture"), 1);
         }
@@ -501,7 +506,7 @@ void renderScene() {
         glUniform1i(glGetUniformLocation(shaderProgram, "mat.enableTexture"), 0);
         if (pMesh->enableTexture) {
             glActiveTexture(GL_TEXTURE0 + TextureIndex);
-            glBindTexture(GL_TEXTURE_2D, pMesh->texture);
+            glBindTexture(GL_TEXTURE_2D, pMesh->hTextureId);
             glUniform1i(glGetUniformLocation(shaderProgram, "mat.text"), TextureIndex);
             glUniform1i(glGetUniformLocation(shaderProgram, "mat.enableTexture"), 1);
         }
@@ -521,7 +526,7 @@ void renderScene() {
         glUniform1i(glGetUniformLocation(shaderProgram, "mat.enableTexture"), 0);
         if (pMesh->enableTexture) {
             glActiveTexture(GL_TEXTURE0 + TextureIndex);
-            glBindTexture(GL_TEXTURE_2D, pMesh->texture);
+            glBindTexture(GL_TEXTURE_2D, pMesh->hTextureId);
             glUniform1i(glGetUniformLocation(shaderProgram, "mat.text"), TextureIndex);
             glUniform1i(glGetUniformLocation(shaderProgram, "mat.enableTexture"), 1);
         }
