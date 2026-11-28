@@ -907,10 +907,14 @@ void processInput(GLFWwindow* window){
     bool lCurrentPressed = glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS;
     bool kCurrentPressed = glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS;
     if (lCurrentPressed && !lPrevPressed) {
-        camera.renderDistance += 1;
+        camera.ChunkRenderDistance = std::min( camera.ChunkRenderDistance + 1, 256 );
+        camera.ChunkUnloadDistance = camera.ChunkRenderDistance + 2;
+        printf( "Chunk Render Distance: %d\n", camera.ChunkRenderDistance );
     }
     if (kCurrentPressed && !kPrevPressed) {
-        camera.renderDistance += -1;
+        camera.ChunkRenderDistance = std::max( camera.ChunkRenderDistance - 1, 2 );
+        camera.ChunkUnloadDistance = camera.ChunkRenderDistance + 2;
+        printf( "Chunk Render Distance: %d\n", camera.ChunkRenderDistance );
     }
     lPrevPressed = lCurrentPressed;
     kPrevPressed = kCurrentPressed;

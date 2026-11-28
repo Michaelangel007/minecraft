@@ -898,7 +898,7 @@ void updateMesh(chunk& chunk) {
 
 
 void loadChunksAround() {
-    const int renderDistance = camera.renderDistance;
+    const int renderDistance = camera.ChunkRenderDistance;
 
     int pChunkX = static_cast<int>(floor(camera.Position.x / CHUNKWIDTH));
     int pChunkY = static_cast<int>(floor(camera.Position.z / CHUNKWIDTH));
@@ -925,7 +925,7 @@ void loadChunksAround() {
 
 
 void unloadDistantChunks() {
-    const int unloadDistance = camera.renderDistance + 1;
+    const int unloadDistance = camera.ChunkUnloadDistance;
 
     int pChunkX = static_cast<int>(floor(camera.Position.x / CHUNKWIDTH));
     int pChunkY = static_cast<int>(floor(camera.Position.z / CHUNKWIDTH));

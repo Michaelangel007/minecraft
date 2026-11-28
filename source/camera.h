@@ -41,7 +41,9 @@ public:
     float MouseSensitivity;
     float Zoom;
     float Yspeed;//for falling
-	int renderDistance = 10; // distance to render chunks
+
+    int ChunkRenderDistance = 10; // distance to render chunks
+    int ChunkUnloadDistance = 11; // distance to unload chunks
 
     int TextureAtlasTilesDimension = 8; // Tiles in Texture Atlas
     float OneOverTextureAtlasTilesDimension = 1.f/ 8.f;
