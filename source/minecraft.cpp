@@ -9,6 +9,7 @@
 #include "db_perlin.hpp"
 #include "blocks.h"
 #include "camera.h"
+#include "chunk.h"
 #include "mesh.h"
 #include "render.hpp"
 #include "structure.h"
@@ -25,7 +26,6 @@ enum Biome_e {
 
 #define CHUNKWIDTH 30
 #define CHUNKHEIGHT 120
-//#define RENDER_DISTANCE 10 camera.renderDistance;
 
 int maxChunksPerFrame = 2;
 using namespace std;
@@ -65,43 +65,6 @@ FaceUV_t getFaceUV(int block, Face_e face) {
     return uv;
 }
 
-typedef struct ChunkKey {
-    int x;
-    int y;
-
-    bool operator==(const ChunkKey& other) const {
-        return x == other.x && y == other.y;
-    }
-} ChunkKey;
-
-namespace std {
-    template<>
-    struct hash<ChunkKey> {
-        std::size_t operator()(const ChunkKey& key) const {
-            return hash<int>()(key.x) ^ (hash<int>()(key.y) << 1);
-        }
-    };
-}
-
-typedef struct chunk {
-    ChunkKey key;
-    vector<vector<vector<signed char>>> blocks;
-    std::vector<float> opaqueMesh;
-    std::vector<float> opaqueNoShadowMesh;
-    std::vector<float> transpMesh;
-    std::vector<float> transpNoShadowMesh;
-    std::vector<float> plantMesh;
-    Mesh* opaqueMeshObj = nullptr;
-    Mesh* transpMeshObj = nullptr;
-    Mesh* opaqueNoShadowMeshObj = nullptr;
-    Mesh* transpNoShadowMeshObj = nullptr;
-    Mesh* plantMeshObj = nullptr;
-    bool isActive = false;
-} Chunk;
-
-std::unordered_map<ChunkKey, Chunk> chunks;
-std::vector<ChunkKey> chunksToLoadQueue;
-std::vector<ChunkKey> chunksToUnloadQueue;
 
 uint32_t hash2D(int x, int y, int seed = 0) {
     uint32_t h = static_cast<uint32_t>(x) * 374761393u
@@ -895,11 +858,7 @@ void updateMesh(chunk& chunk) {
     
 }
 
-
-
-void loadChunksAround() {
-    const int renderDistance = camera.ChunkRenderDistance;
-
+void loadChunksAround( const int renderDistance ) {
     int pChunkX = static_cast<int>(floor(camera.Position.x / CHUNKWIDTH));
     int pChunkY = static_cast<int>(floor(camera.Position.z / CHUNKWIDTH));
 
@@ -922,11 +881,7 @@ void loadChunksAround() {
     }
 }
 
-
-
-void unloadDistantChunks() {
-    const int unloadDistance = camera.ChunkUnloadDistance;
-
+void unloadDistantChunks( const int unloadDistance ) {
     int pChunkX = static_cast<int>(floor(camera.Position.x / CHUNKWIDTH));
     int pChunkY = static_cast<int>(floor(camera.Position.z / CHUNKWIDTH));
 
@@ -1482,8 +1437,8 @@ int main() {
         //setLightDirection(sun, glm::vec3(-3.0f + glm::cos(glfwGetTime())*2.0, 3.8f + glm::sin(glfwGetTime()) * 2.0, -5.0f));
         //cout << camera.Position.y << endl;
 
-        loadChunksAround();
-        unloadDistantChunks();
+        loadChunksAround( camera.ChunkRenderDistance );
+        unloadDistantChunks( camera.ChunkUnloadDistance );
         processChunkQueues();
         raycastDDA(camera.Position, camera.Front);
         processKey();

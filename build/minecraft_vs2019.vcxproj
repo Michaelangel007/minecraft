@@ -147,6 +147,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\source\blocks.cpp" />
+    <ClCompile Include="..\source\chunk.cpp" />
     <ClCompile Include="..\source\face.cpp" />
     <ClCompile Include="..\source\mesh.cpp" />
     <ClCompile Include="..\source\minecraft.cpp" />
@@ -156,6 +157,7 @@
   <ItemGroup>
     <ClInclude Include="..\source\blocks.h" />
     <ClInclude Include="..\source\camera.h" />
+    <ClInclude Include="..\source\chunk.h" />
     <ClInclude Include="..\source\db_perlin.hpp" />
     <ClInclude Include="..\source\face.h" />
     <ClInclude Include="..\source\mesh.h" />
