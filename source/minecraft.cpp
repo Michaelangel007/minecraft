@@ -24,9 +24,6 @@ enum Biome_e {
     , BIOME_NONE = -1
 };
 
-#define CHUNKWIDTH 30
-#define CHUNKHEIGHT 120
-
 int maxChunksPerFrame = 2;
 using namespace std;
 
@@ -44,6 +41,8 @@ bool flyMode = true;
 float playerHeight = 1.8f;
 int waterHeight = 25;
 int seed = 1;
+
+void updatePlayerChunkPositionOffset();
 
 struct FaceUV_t {
     float u;
@@ -65,7 +64,6 @@ FaceUV_t getFaceUV(int block, Face_e face) {
     return uv;
 }
 
-
 uint32_t hash2D(int x, int y, int seed = 0) {
     uint32_t h = static_cast<uint32_t>(x) * 374761393u
         + static_cast<uint32_t>(y) * 668265263u
@@ -78,7 +76,6 @@ uint32_t hash2D(int x, int y, int seed = 0) {
 bool inChunk(int i, int j, int k) {
     return 0 <= i && i < CHUNKWIDTH && 0 <= j && j < CHUNKHEIGHT && 0 <= k && k < CHUNKWIDTH;
 }
-
 
 double blockDensity(int i, int j, int k, int seed) {
     double weirdness = glm::clamp(db::perlin((double)i / 500.0, (double)k / 500.0, 100.0 * seed) * 5.0, -1.0, 1.0);
@@ -138,10 +135,10 @@ void placeBlockStructure(vector<vector<vector<signed char>>>& chunk, std::vector
     }
 }
 
-void initChunk(chunk& chunk, int x, int y) {
+void initChunk(chunk& chunk, int x, int z) {
     ChunkKey key;
     key.x = x;
-    key.y = y;
+    key.z = z;
     chunk.key = key;
     chunk.blocks.resize(CHUNKWIDTH, vector<vector<signed char>>(CHUNKHEIGHT, vector<signed char>(CHUNKWIDTH, BLOCK_AIR)));
 
@@ -152,7 +149,7 @@ void initChunk(chunk& chunk, int x, int y) {
         for (int k = 0; k < CHUNKWIDTH; ++k) {
             //density gen
             for (int j = 0; j < CHUNKHEIGHT; ++j) {
-                if (blockDensity(i + key.x * CHUNKWIDTH,j, k + key.y * CHUNKWIDTH, seed) < 0.0) {
+                if (blockDensity(i + key.x * CHUNKWIDTH,j, k + key.z * CHUNKWIDTH, seed) < 0.0) {
                     if(j > surfaceLevel[i][k]) {
                         surfaceLevel[i][k] = j;
                     }
@@ -171,7 +168,7 @@ void initChunk(chunk& chunk, int x, int y) {
             }
 
             //differentiation
-            Biome_e biome = getBiomeTemperature(i + key.x * CHUNKWIDTH, k + key.y * CHUNKWIDTH, seed);
+            Biome_e biome = getBiomeTemperature(i + key.x * CHUNKWIDTH, k + key.z * CHUNKWIDTH, seed);
             if (biome == BIOME_PLAINS) {
                 for (int j = 0; j < CHUNKHEIGHT - 2; ++j) {
                     if (j >= waterHeight) {
@@ -233,12 +230,12 @@ void initChunk(chunk& chunk, int x, int y) {
     //tree / structure
     for (int i = -3; i < CHUNKWIDTH + 3; ++i) {
         for (int k = -3; k < CHUNKWIDTH+3; ++k) {
-            if (asATree(i + key.x * CHUNKWIDTH, k + key.y * CHUNKWIDTH, seed)) {
+            if (asATree(i + key.x * CHUNKWIDTH, k + key.z * CHUNKWIDTH, seed)) {
                 int h = 0;
-                Biome_e biome = getBiomeTemperature(i + key.x * CHUNKWIDTH, k + key.y * CHUNKWIDTH, seed);
+                Biome_e biome = getBiomeTemperature(i + key.x * CHUNKWIDTH, k + key.z * CHUNKWIDTH, seed);
                 if (i < 0 || k < 0 || i >= CHUNKWIDTH || k >= CHUNKWIDTH) {
                     for (int j = CHUNKHEIGHT - 2; j >= 0; --j) {
-                        if (blockDensity(i + key.x * CHUNKWIDTH, j, k + key.y * CHUNKWIDTH, seed) < 0.0) {
+                        if (blockDensity(i + key.x * CHUNKWIDTH, j, k + key.z * CHUNKWIDTH, seed) < 0.0) {
                             h = j;
                             break;
                         }
@@ -248,7 +245,7 @@ void initChunk(chunk& chunk, int x, int y) {
                 }
                 if (h >= waterHeight+2) {
                     if (h != 0 && biome == BIOME_PLAINS) {
-                        int type = hash2D(i + key.x * CHUNKWIDTH, k + key.y * CHUNKWIDTH, seed) % 35;
+                        int type = hash2D(i + key.x * CHUNKWIDTH, k + key.z * CHUNKWIDTH, seed) % 35;
                         if(type < 10) {
                             placeBlockStructure(chunk.blocks, oak_tree_1, i, h, k);
                         }else if (type < 20) {
@@ -260,7 +257,7 @@ void initChunk(chunk& chunk, int x, int y) {
                         }
                     }
                     else if (h != 0 && biome == BIOME_SNOW) {
-                        int type = hash2D(i + key.x * CHUNKWIDTH, k + key.y * CHUNKWIDTH, seed) % 34;
+                        int type = hash2D(i + key.x * CHUNKWIDTH, k + key.z * CHUNKWIDTH, seed) % 34;
                         if (type < 10) {
                             placeBlockStructure(chunk.blocks, STRUCTURE_SPRUCE_TREE_8, i, h, k);
                         }
@@ -274,11 +271,11 @@ void initChunk(chunk& chunk, int x, int y) {
                             placeBlockStructure(chunk.blocks, STRUCTURE_SPRUCE_SHRUB_2, i, h, k);
                         }
                     }
-                    else if (h != 0 && biome == BIOME_DESERT && (i + key.x * CHUNKWIDTH, k + key.y * CHUNKWIDTH)%11 == 0) {
-                        if ((i + key.x * CHUNKWIDTH, k + key.y * CHUNKWIDTH) % 5 == 0) {
+                    else if (h != 0 && biome == BIOME_DESERT && (i + key.x * CHUNKWIDTH, k + key.z * CHUNKWIDTH)%11 == 0) {
+                        if ((i + key.x * CHUNKWIDTH, k + key.z * CHUNKWIDTH) % 5 == 0) {
                             placeBlockStructure(chunk.blocks, STRUCTURE_CACTUS_4, i, h, k);
                         }
-                        else if ((i + key.x * CHUNKWIDTH, k + key.y * CHUNKWIDTH) % 5 == 1) {
+                        else if ((i + key.x * CHUNKWIDTH, k + key.z * CHUNKWIDTH) % 5 == 1) {
                             placeBlockStructure(chunk.blocks, STRUCTURE_CACTUS_2, i, h, k);
                         }
                         else {
@@ -289,8 +286,8 @@ void initChunk(chunk& chunk, int x, int y) {
                 else {
                     if (h > 1 && h < waterHeight - 2) {
                         if (biome == BIOME_PLAINS) {
-                            if ((hash2D(i + key.x * CHUNKWIDTH, k + key.y * CHUNKWIDTH, seed) % 100) < 5) {
-                                int type = hash2D(i + key.x * CHUNKWIDTH, k + key.y * CHUNKWIDTH, seed) % 14;
+                            if ((hash2D(i + key.x * CHUNKWIDTH, k + key.z * CHUNKWIDTH, seed) % 100) < 5) {
+                                int type = hash2D(i + key.x * CHUNKWIDTH, k + key.z * CHUNKWIDTH, seed) % 14;
                                 if (type < 1) placeBlockStructure(chunk.blocks, coral_1, i, h, k);
                                 else if (type < 2) placeBlockStructure(chunk.blocks, coral_2, i, h, k);
                                 else if (type < 3) placeBlockStructure(chunk.blocks, coral_3, i, h, k);
@@ -310,8 +307,8 @@ void initChunk(chunk& chunk, int x, int y) {
                             }
                         }
                         if (biome == BIOME_DESERT) {
-                            if ((hash2D(i + key.x * CHUNKWIDTH, k + key.y * CHUNKWIDTH, seed) % 100) < 100) {
-                                int type = hash2D(i + key.x * CHUNKWIDTH, k + key.y * CHUNKWIDTH, seed) % 14;
+                            if ((hash2D(i + key.x * CHUNKWIDTH, k + key.z * CHUNKWIDTH, seed) % 100) < 100) {
+                                int type = hash2D(i + key.x * CHUNKWIDTH, k + key.z * CHUNKWIDTH, seed) % 14;
                                 if (type < 1) placeBlockStructure(chunk.blocks, coral_1, i, h, k);
                                 else if (type < 2) placeBlockStructure(chunk.blocks, coral_2, i, h, k);
                                 else if (type < 3) placeBlockStructure(chunk.blocks, coral_3, i, h, k);
@@ -339,63 +336,63 @@ void initChunk(chunk& chunk, int x, int y) {
     //decoration
     for (int i = 0; i < CHUNKWIDTH; ++i) {
         for (int k = 0; k < CHUNKWIDTH; ++k) {
-            Biome_e biome = getBiomeTemperature(i + key.x * CHUNKWIDTH, k + key.y * CHUNKWIDTH, seed);
+            Biome_e biome = getBiomeTemperature(i + key.x * CHUNKWIDTH, k + key.z * CHUNKWIDTH, seed);
             int h = surfaceLevel[i][k];
             if (h > waterHeight && chunk.blocks[i][h + 1][k] == BLOCK_AIR) {
                 if (h > waterHeight + 1 && biome == BIOME_PLAINS) {
-                    if ((hash2D(i + key.x * CHUNKWIDTH, k + key.y * CHUNKWIDTH, seed) % 100) < 4) {
+                    if ((hash2D(i + key.x * CHUNKWIDTH, k + key.z * CHUNKWIDTH, seed) % 100) < 4) {
                         chunk.blocks[i][h + 1][k] = BLOCK_GRASS_SHORT;
                         continue;
                     }
-                    if ((hash2D(i + key.x * CHUNKWIDTH, k + key.y * CHUNKWIDTH, seed + 1) % 100) < 1) {
+                    if ((hash2D(i + key.x * CHUNKWIDTH, k + key.z * CHUNKWIDTH, seed + 1) % 100) < 1) {
                         chunk.blocks[i][h + 1][k] = BLOCK_FLOWER_POPPY;
                         continue;
                     }
-                    if ((hash2D(i + key.x * CHUNKWIDTH, k + key.y * CHUNKWIDTH, seed + 2) % 100) < 1) {
+                    if ((hash2D(i + key.x * CHUNKWIDTH, k + key.z * CHUNKWIDTH, seed + 2) % 100) < 1) {
                         chunk.blocks[i][h + 1][k] = BLOCK_FLOWER_DANDELION;
                         continue;
                     }
                 }
                 if (h > waterHeight + 1 && biome == BIOME_SNOW) {
-                    if ((hash2D(i + key.x * CHUNKWIDTH, k + key.y * CHUNKWIDTH, seed) % 100) < 1) {
+                    if ((hash2D(i + key.x * CHUNKWIDTH, k + key.z * CHUNKWIDTH, seed) % 100) < 1) {
                         chunk.blocks[i][h + 1][k] = BLOCK_PLANT_SWEET_BERRY;
                         continue;
                     }
                 }
                 if (h > waterHeight + 1 && biome == BIOME_DESERT) {
-                    if ((hash2D(i + key.x * CHUNKWIDTH, k + key.y * CHUNKWIDTH, seed) % 200) < 1) {
+                    if ((hash2D(i + key.x * CHUNKWIDTH, k + key.z * CHUNKWIDTH, seed) % 200) < 1) {
                         chunk.blocks[i][h + 1][k] = BLOCK_DEAD_BUSH;
                         continue;
                     }
                 }
             }            
 
-            if (h < waterHeight-1 && biome == 1 && chunk.blocks[i][h + 1][k] == BLOCK_WATER) {
-                if ((hash2D(i + key.x * CHUNKWIDTH, k + key.y * CHUNKWIDTH, seed) % 100) < 8) {
+            if (h < waterHeight-1 && biome == BIOME_SNOW && chunk.blocks[i][h + 1][k] == BLOCK_WATER) {
+                if ((hash2D(i + key.x * CHUNKWIDTH, k + key.z * CHUNKWIDTH, seed) % 100) < 8) {
                     chunk.blocks[i][h + 1][k] = BLOCK_PLANT_KELP;
                     continue;
                 }
             }
-            if (h < waterHeight - 1 && biome == 0 && chunk.blocks[i][h + 1][k] == BLOCK_WATER) {
-                if ((hash2D(i + key.x * CHUNKWIDTH, k + key.y * CHUNKWIDTH, seed) % 100) < 2) {
+            if (h < waterHeight - 1 && biome == BIOME_PLAINS && chunk.blocks[i][h + 1][k] == BLOCK_WATER) {
+                if ((hash2D(i + key.x * CHUNKWIDTH, k + key.z * CHUNKWIDTH, seed) % 100) < 2) {
                     chunk.blocks[i][h + 1][k] = BLOCK_PLANT_KELP;
                     continue;
                 }
-                if ((hash2D(i + key.x * CHUNKWIDTH, k + key.y * CHUNKWIDTH, seed + 1) % 100) < 1) {
+                if ((hash2D(i + key.x * CHUNKWIDTH, k + key.z * CHUNKWIDTH, seed + 1) % 100) < 1) {
                     chunk.blocks[i][h + 1][k] = BLOCK_CORAL_TUBE_FAN;
                     continue;
                 }
-                if ((hash2D(i + key.x * CHUNKWIDTH, k + key.y * CHUNKWIDTH, seed + 2) % 100) < 1) {
+                if ((hash2D(i + key.x * CHUNKWIDTH, k + key.z * CHUNKWIDTH, seed + 2) % 100) < 1) {
                     chunk.blocks[i][h + 1][k] = BLOCK_CORAL_BRAIN_FAN;
                     continue;
                 }
             }
-            if (h < waterHeight - 1 && biome == 2 && chunk.blocks[i][h + 1][k] == BLOCK_WATER) {
-                if ((hash2D(i + key.x * CHUNKWIDTH, k + key.y * CHUNKWIDTH, seed + 1) % 100) < 2) {
+            if (h < waterHeight - 1 && biome == BIOME_DESERT && chunk.blocks[i][h + 1][k] == BLOCK_WATER) {
+                if ((hash2D(i + key.x * CHUNKWIDTH, k + key.z * CHUNKWIDTH, seed + 1) % 100) < 2) {
                     chunk.blocks[i][h + 1][k] = BLOCK_CORAL_TUBE_FAN;
                     continue;
                 }
-                if ((hash2D(i + key.x * CHUNKWIDTH, k + key.y * CHUNKWIDTH, seed + 2) % 100) < 2) {
+                if ((hash2D(i + key.x * CHUNKWIDTH, k + key.z * CHUNKWIDTH, seed + 2) % 100) < 2) {
                     chunk.blocks[i][h + 1][k] = BLOCK_CORAL_BRAIN_FAN;
                     continue;
                 }
@@ -411,11 +408,10 @@ void updateMesh(chunk& chunk) {
     chunk.transpNoShadowMesh.clear();
     chunk.plantMesh.clear();
 
-
-    ChunkKey westKey = { chunk.key.x - 1, chunk.key.y };
-    ChunkKey eastKey = { chunk.key.x + 1, chunk.key.y };
-    ChunkKey northKey = { chunk.key.x, chunk.key.y - 1 };
-    ChunkKey southKey = { chunk.key.x, chunk.key.y + 1 };
+    ChunkKey westKey  = { chunk.key.x - 1, chunk.key.z     };
+    ChunkKey eastKey  = { chunk.key.x + 1, chunk.key.z     };
+    ChunkKey northKey = { chunk.key.x    , chunk.key.z - 1 };
+    ChunkKey southKey = { chunk.key.x    , chunk.key.z + 1 };
 
     bool hasWestChunk = false;
     bool hasEastChunk = false;
@@ -806,54 +802,54 @@ void updateMesh(chunk& chunk) {
 
     if(!chunk.opaqueMesh.empty()) {
         if (chunk.opaqueMeshObj == NULL) {
-            chunk.opaqueMeshObj = setupMeshTexture(chunk.opaqueMesh, glm::vec3(chunk.key.x * CHUNKWIDTH, 0, chunk.key.y * CHUNKWIDTH), false, true, false);
+            chunk.opaqueMeshObj = setupMeshTexture(chunk.opaqueMesh,ChunkKeyToWorldPosition(chunk), false, true, false);
             setMeshTextureFile(chunk.opaqueMeshObj, TEXTURE_ATLAS_FILENAME);
         }else {
             updateMeshTexture(chunk.opaqueMeshObj, chunk.opaqueMesh);
         }
-        setMeshPosition(chunk.opaqueMeshObj, glm::vec3(chunk.key.x* CHUNKWIDTH, 0, chunk.key.y* CHUNKWIDTH));
+        setMeshPosition(chunk.opaqueMeshObj, ChunkKeyToWorldPosition(chunk));
     }
     if (!chunk.opaqueNoShadowMesh.empty()) {
         if (chunk.opaqueNoShadowMeshObj == NULL) {
-            chunk.opaqueNoShadowMeshObj = setupMeshTexture(chunk.opaqueNoShadowMesh, glm::vec3(chunk.key.x * CHUNKWIDTH, 0, chunk.key.y * CHUNKWIDTH), false, false, false);
+            chunk.opaqueNoShadowMeshObj = setupMeshTexture(chunk.opaqueNoShadowMesh, ChunkKeyToWorldPosition(chunk), false, false, false);
             setMeshTextureFile(chunk.opaqueNoShadowMeshObj, TEXTURE_ATLAS_FILENAME);
         }
         else {
             updateMeshTexture(chunk.opaqueNoShadowMeshObj, chunk.opaqueNoShadowMesh);
         }
-        setMeshPosition(chunk.opaqueNoShadowMeshObj, glm::vec3(chunk.key.x * CHUNKWIDTH, 0, chunk.key.y * CHUNKWIDTH));
+        setMeshPosition(chunk.opaqueNoShadowMeshObj, ChunkKeyToWorldPosition(chunk));
     }
 
     if (!chunk.transpMesh.empty()) {
         if (chunk.transpMeshObj == NULL) {
-            chunk.transpMeshObj = setupMeshTexture(chunk.transpMesh, glm::vec3(chunk.key.x * CHUNKWIDTH, 0, chunk.key.y * CHUNKWIDTH), true, true, false);
+            chunk.transpMeshObj = setupMeshTexture(chunk.transpMesh, ChunkKeyToWorldPosition(chunk), true, true, false);
             setMeshTextureFile(chunk.transpMeshObj, TEXTURE_ATLAS_FILENAME);
         }
         else {
             updateMeshTexture(chunk.transpMeshObj, chunk.transpMesh);
         }
-        setMeshPosition(chunk.transpMeshObj, glm::vec3(chunk.key.x * CHUNKWIDTH, 0, chunk.key.y * CHUNKWIDTH));
+        setMeshPosition(chunk.transpMeshObj, ChunkKeyToWorldPosition(chunk));
     }
     if (!chunk.transpNoShadowMesh.empty()) {
         if (chunk.transpNoShadowMeshObj == NULL) {
-            chunk.transpNoShadowMeshObj = setupMeshTexture(chunk.transpNoShadowMesh, glm::vec3(chunk.key.x * CHUNKWIDTH, 0, chunk.key.y * CHUNKWIDTH), true, false, false);
+            chunk.transpNoShadowMeshObj = setupMeshTexture(chunk.transpNoShadowMesh, ChunkKeyToWorldPosition(chunk), true, false, false);
             setMeshTextureFile(chunk.transpNoShadowMeshObj, TEXTURE_ATLAS_FILENAME);
         }
         else {
             updateMeshTexture(chunk.transpNoShadowMeshObj, chunk.transpNoShadowMesh);
         }
-        setMeshPosition(chunk.transpNoShadowMeshObj, glm::vec3(chunk.key.x * CHUNKWIDTH, 0, chunk.key.y * CHUNKWIDTH));
+        setMeshPosition(chunk.transpNoShadowMeshObj, ChunkKeyToWorldPosition(chunk));
     }
 
     if (!chunk.plantMesh.empty()) {
         if (chunk.plantMeshObj == NULL) {
-            chunk.plantMeshObj = setupMeshTexture(chunk.plantMesh, glm::vec3(chunk.key.x * CHUNKWIDTH, 0, chunk.key.y * CHUNKWIDTH), false, true, true);
+            chunk.plantMeshObj = setupMeshTexture(chunk.plantMesh, ChunkKeyToWorldPosition(chunk), false, true, true);
             setMeshTextureFile(chunk.plantMeshObj, TEXTURE_ATLAS_FILENAME);
         }
         else {
             updateMeshTexture(chunk.plantMeshObj, chunk.plantMesh);
         }
-        setMeshPosition(chunk.plantMeshObj, glm::vec3(chunk.key.x * CHUNKWIDTH, 0, chunk.key.y * CHUNKWIDTH));
+        setMeshPosition(chunk.plantMeshObj, ChunkKeyToWorldPosition(chunk));
     }
     
 }
@@ -892,7 +888,7 @@ void unloadDistantChunks( const int unloadDistance, const glm::ivec3 playerChunk
 
         if (chunk.isActive) {
             int distanceX = chunk.key.x - playerChunkX;
-            int distanceZ = chunk.key.y - playerChunkZ;
+            int distanceZ = chunk.key.z - playerChunkZ;
             int distanceSquared = (distanceX * distanceX) + (distanceZ * distanceZ);
 
             if (distanceSquared > unloadDistance * unloadDistance) {
@@ -965,15 +961,14 @@ void processChunkQueues() {
         if (it == chunks.end()) {
             Chunk chunk;
             chunk.key = key;
-            initChunk(chunk, key.x, key.y);
+            initChunk(chunk, key.x, key.z);
             chunks[key] = chunk;
             it = chunks.find(key);
 
-
-            ChunkKey westKey = { chunk.key.x - 1, chunk.key.y };
-            ChunkKey eastKey = { chunk.key.x + 1, chunk.key.y };
-            ChunkKey northKey = { chunk.key.x, chunk.key.y - 1 };
-            ChunkKey southKey = { chunk.key.x, chunk.key.y + 1 };
+            ChunkKey westKey  = { chunk.key.x - 1, chunk.key.z     };
+            ChunkKey eastKey  = { chunk.key.x + 1, chunk.key.z     };
+            ChunkKey northKey = { chunk.key.x    , chunk.key.z - 1 };
+            ChunkKey southKey = { chunk.key.x    , chunk.key.z + 1 };
 
             auto westIt = chunks.find(westKey);
             if (westIt != chunks.end()) {
@@ -1132,7 +1127,7 @@ void processClick() {
                 updateMesh(chunk);
 
                 if (localX == 0) {
-                    ChunkKey westKey = { chunk.key.x - 1, chunk.key.y }; 
+                    ChunkKey westKey = { chunk.key.x - 1, chunk.key.z };
                     auto westIt = chunks.find(westKey);
                     if (westIt != chunks.end()) {
                         if (westIt->second.isActive) {
@@ -1141,7 +1136,7 @@ void processClick() {
                     }
                 }
                 if (localX == CHUNKWIDTH-1) {
-                    ChunkKey eastKey = { chunk.key.x + 1, chunk.key.y };
+                    ChunkKey eastKey = { chunk.key.x + 1, chunk.key.z };
                     auto eastIt = chunks.find(eastKey);
                     if (eastIt != chunks.end()) {
                         if (eastIt->second.isActive) {
@@ -1150,7 +1145,7 @@ void processClick() {
                     }
                 }
                 if (localZ == 0) {
-                    ChunkKey northKey = { chunk.key.x, chunk.key.y - 1};
+                    ChunkKey northKey = { chunk.key.x, chunk.key.z - 1};
                     auto northIt = chunks.find(northKey);
                     if (northIt != chunks.end()) {
                         if (northIt->second.isActive) {
@@ -1159,7 +1154,7 @@ void processClick() {
                     }
                 }
                 if (localZ == CHUNKWIDTH - 1) {
-                    ChunkKey southKey = { chunk.key.x, chunk.key.y + 1};
+                    ChunkKey southKey = { chunk.key.x, chunk.key.z + 1};
                     auto southIt = chunks.find(southKey);
                     if (southIt != chunks.end()) {
                         if (southIt->second.isActive) {
@@ -1346,11 +1341,11 @@ void processKey() {
         float posY = camera.Position.y + camera.Yspeed * deltaTime;
         bool isOnGround = false;
 
-        int chunkX = static_cast<int>(floor((float)(camera.Position.x) / CHUNKWIDTH));
-        int chunkZ = static_cast<int>(floor((float)(camera.Position.z) / CHUNKWIDTH));
-        int localX = (camera.Position.x) - chunkX * CHUNKWIDTH;
-        int localZ = (camera.Position.z) - chunkZ * CHUNKWIDTH;
-        ChunkKey chunkKey = { chunkX, chunkZ };
+        updatePlayerChunkPositionOffset(); // // Update position & offset based on camera position
+        const int localX = camera.PlayerInChunkOffset.x;
+        const int localZ = camera.PlayerInChunkOffset.z;
+        ChunkKey chunkKey = camera.PlayerChunkKey;
+
         auto chunkIt = chunks.find(chunkKey);
 
         if (chunkIt != chunks.end() && chunkIt->second.isActive) {
@@ -1423,6 +1418,8 @@ void updatePlayerChunkPositionOffset() {
     camera.PlayerInChunkOffset.x = static_cast<int>(std::floor(camera.Position.x)) - camera.PlayerChunkPosition.x * CHUNKWIDTH;
     camera.PlayerInChunkOffset.y = static_cast<int>(std::floor(camera.Position.y)) - camera.PlayerChunkPosition.y * CHUNKWIDTH;
     camera.PlayerInChunkOffset.z = static_cast<int>(std::floor(camera.Position.z)) - camera.PlayerChunkPosition.z * CHUNKWIDTH;
+
+    camera.PlayerChunkKey = { camera.PlayerChunkPosition.x, camera.PlayerChunkPosition.z };
 }
 
 int main() {
@@ -1456,8 +1453,6 @@ int main() {
         raycastDDA(camera.Position, camera.Front);
 
         processKey();
-        updatePlayerChunkPositionOffset(); // NOTE: Must use new camera position
-
         processClick();
         setAtmosphere();
         renderScene();

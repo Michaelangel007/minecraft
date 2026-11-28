@@ -1,8 +1,12 @@
+#pragma once
+
 #ifndef CAMERA_H
 #define CAMERA_H
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+
+#include "chunk.h"
 
 // Defines several possible options for camera movement. Used as abstraction to stay away from window-system specific input methods
 enum Camera_Movement {
@@ -44,6 +48,7 @@ public:
 
     glm::ivec3 PlayerChunkPosition; // chunk coordinate
     glm::ivec3 PlayerInChunkOffset; // position within a chunk
+    ChunkKey   PlayerChunkKey;
 
     int ChunkRenderDistance = 10; // distance to render chunks
     int ChunkUnloadDistance = 11; // distance to unload chunks
