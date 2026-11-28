@@ -13,6 +13,8 @@
 #include "render.hpp"
 #include "structure.h"
 
+const char* TEXTURE_ATLAS_FILENAME = "data/textures/all.png";
+
 enum Biome_e {
       BIOME_PLAINS
     , BIOME_SNOW
@@ -843,7 +845,7 @@ void updateMesh(chunk& chunk) {
     if(!chunk.opaqueMesh.empty()) {
         if (chunk.opaqueMeshObj == NULL) {
             chunk.opaqueMeshObj = setupMeshTexture(chunk.opaqueMesh, glm::vec3(chunk.key.x * CHUNKWIDTH, 0, chunk.key.y * CHUNKWIDTH), false, true, false);
-            setMeshTextureFile(chunk.opaqueMeshObj, "data/textures/all.png");
+            setMeshTextureFile(chunk.opaqueMeshObj, TEXTURE_ATLAS_FILENAME);
         }else {
             updateMeshTexture(chunk.opaqueMeshObj, chunk.opaqueMesh);
         }
@@ -852,7 +854,7 @@ void updateMesh(chunk& chunk) {
     if (!chunk.opaqueNoShadowMesh.empty()) {
         if (chunk.opaqueNoShadowMeshObj == NULL) {
             chunk.opaqueNoShadowMeshObj = setupMeshTexture(chunk.opaqueNoShadowMesh, glm::vec3(chunk.key.x * CHUNKWIDTH, 0, chunk.key.y * CHUNKWIDTH), false, false, false);
-            setMeshTextureFile(chunk.opaqueNoShadowMeshObj, "data/textures/all.png");
+            setMeshTextureFile(chunk.opaqueNoShadowMeshObj, TEXTURE_ATLAS_FILENAME);
         }
         else {
             updateMeshTexture(chunk.opaqueNoShadowMeshObj, chunk.opaqueNoShadowMesh);
@@ -863,7 +865,7 @@ void updateMesh(chunk& chunk) {
     if (!chunk.transpMesh.empty()) {
         if (chunk.transpMeshObj == NULL) {
             chunk.transpMeshObj = setupMeshTexture(chunk.transpMesh, glm::vec3(chunk.key.x * CHUNKWIDTH, 0, chunk.key.y * CHUNKWIDTH), true, true, false);
-            setMeshTextureFile(chunk.transpMeshObj, "data/textures/all.png");
+            setMeshTextureFile(chunk.transpMeshObj, TEXTURE_ATLAS_FILENAME);
         }
         else {
             updateMeshTexture(chunk.transpMeshObj, chunk.transpMesh);
@@ -873,7 +875,7 @@ void updateMesh(chunk& chunk) {
     if (!chunk.transpNoShadowMesh.empty()) {
         if (chunk.transpNoShadowMeshObj == NULL) {
             chunk.transpNoShadowMeshObj = setupMeshTexture(chunk.transpNoShadowMesh, glm::vec3(chunk.key.x * CHUNKWIDTH, 0, chunk.key.y * CHUNKWIDTH), true, false, false);
-            setMeshTextureFile(chunk.transpNoShadowMeshObj, "data/textures/all.png");
+            setMeshTextureFile(chunk.transpNoShadowMeshObj, TEXTURE_ATLAS_FILENAME);
         }
         else {
             updateMeshTexture(chunk.transpNoShadowMeshObj, chunk.transpNoShadowMesh);
@@ -884,7 +886,7 @@ void updateMesh(chunk& chunk) {
     if (!chunk.plantMesh.empty()) {
         if (chunk.plantMeshObj == NULL) {
             chunk.plantMeshObj = setupMeshTexture(chunk.plantMesh, glm::vec3(chunk.key.x * CHUNKWIDTH, 0, chunk.key.y * CHUNKWIDTH), false, true, true);
-            setMeshTextureFile(chunk.plantMeshObj, "data/textures/all.png");
+            setMeshTextureFile(chunk.plantMeshObj, TEXTURE_ATLAS_FILENAME);
         }
         else {
             updateMeshTexture(chunk.plantMeshObj, chunk.plantMesh);
