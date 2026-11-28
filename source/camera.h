@@ -43,7 +43,8 @@ public:
     float Yspeed;//for falling
 	int renderDistance = 10; // distance to render chunks
 
-    int textureMapWidth = 8; // Tiles in Texture Atlas
+    int TextureAtlasTilesDimension = 8; // Tiles in Texture Atlas
+    float OneOverTextureAtlasTilesDimension = 1.f/ 8.f;
 
     bool leftMousePressed = false;
     bool rightMousePressed = false;

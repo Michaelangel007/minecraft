@@ -59,8 +59,8 @@ FaceUV_t getFaceUV(int block, Face_e face) {
 
     int textureCo =  BLOCK_FACE_TO_TILE[ block ][ face ];
     FaceUV_t uv = {
-        (float)(textureCo % camera.textureMapWidth) / camera.textureMapWidth,
-        (float)(textureCo / camera.textureMapWidth) / camera.textureMapWidth,
+        (float)(textureCo % camera.TextureAtlasTilesDimension) * camera.OneOverTextureAtlasTilesDimension,
+        (float)(textureCo / camera.TextureAtlasTilesDimension) * camera.OneOverTextureAtlasTilesDimension,
     };
     return uv;
 }
