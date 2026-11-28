@@ -34,8 +34,6 @@ enum MeshType_e
 };
 extern MeshList_t gMeshList[ NUM_MESH_TYPES ];
 
-extern int textureMapWidth;
-
 void cleanupMeshes();
 
 void addTopFace   (std::vector<float>& vertices, int ix, int iy, int iz, float u, float v);

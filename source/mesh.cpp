@@ -1,4 +1,5 @@
 #include "mesh.h"
+#include "camera.h"
 
 MeshList_t gMeshList[ NUM_MESH_TYPES ];
 
@@ -6,7 +7,7 @@ MeshList_t gMeshList[ NUM_MESH_TYPES ];
     const float x = static_cast<float>(ix); \
     const float y = static_cast<float>(iy); \
     const float z = static_cast<float>(iz); \
-    const float s = 1.0f/static_cast<float>(textureMapWidth);
+    const float s = 1.0f/static_cast<float>(camera.textureMapWidth);
 
 void addTopFace(std::vector<float>& vertices, int ix, int iy, int iz, float ou, float ov) {
     XYZ_INT_TO_FLOAT

@@ -43,6 +43,8 @@ public:
     float Yspeed;//for falling
 	int renderDistance = 10; // distance to render chunks
 
+    int textureMapWidth = 8; // Tiles in Texture Atlas
+
     bool leftMousePressed = false;
     bool rightMousePressed = false;
     bool key1Pressed = false;
@@ -172,4 +174,7 @@ private:
         WorldForward = glm::vec3(cos(glm::radians(Yaw)), 0.0, sin(glm::radians(Yaw))); // OPTIMIZATION: Don't need normalize()
     }
 };
+
+extern Camera camera;
+
 #endif

@@ -30,7 +30,6 @@ enum Biome_e {
 int maxChunksPerFrame = 2;
 using namespace std;
 
-int textureMapWidth = 8;
 Camera camera;
 
 bool hitBlock = false;
@@ -60,8 +59,8 @@ FaceUV_t getFaceUV(int block, Face_e face) {
 
     int textureCo =  BLOCK_FACE_TO_TILE[ block ][ face ];
     FaceUV_t uv = {
-        (float)(textureCo % textureMapWidth) / textureMapWidth,
-        (float)(textureCo / textureMapWidth) / textureMapWidth,
+        (float)(textureCo % camera.textureMapWidth) / camera.textureMapWidth,
+        (float)(textureCo / camera.textureMapWidth) / camera.textureMapWidth,
     };
     return uv;
 }
