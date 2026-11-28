@@ -73,10 +73,6 @@ uint32_t hash2D(int x, int y, int seed = 0) {
     return h;
 }
 
-bool inChunk(int i, int j, int k) {
-    return 0 <= i && i < CHUNKWIDTH && 0 <= j && j < CHUNKHEIGHT && 0 <= k && k < CHUNKWIDTH;
-}
-
 double blockDensity(int i, int j, int k, int seed) {
     double weirdness = glm::clamp(db::perlin((double)i / 500.0, (double)k / 500.0, 100.0 * seed) * 5.0, -1.0, 1.0);
     double flatness = glm::clamp(db::perlin((double)i / 500.0, (double)k / 500.0, 200.0 * seed) * 5.0, -1.0, 1.0);
@@ -127,7 +123,7 @@ void placeBlockStructure(vector<vector<vector<signed char>>>& chunk, std::vector
         int z = std::get<2>(block);
         signed char blockType = std::get<3>(block);
         bool replaceExisting = std::get<4>(block);
-        if (inChunk(x +lx, y+ly, z+lz)) {
+        if (IsInChunk(x +lx, y+ly, z+lz)) {
             if (replaceExisting || !hasProp(chunk[x + lx][y + ly][z + lz], IS_SOLID)) {
                 chunk[x+lx][y+ly][z+lz] = blockType;
             }

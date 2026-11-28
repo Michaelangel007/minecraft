@@ -50,6 +50,13 @@ inline glm::vec3 ChunkKeyToWorldPosition(Chunk& chunk) {
     return glm::vec3(chunk.key.x * CHUNKWIDTH, 0, chunk.key.z * CHUNKWIDTH);
 }
 
+// Offset in chunk
+inline bool IsInChunk(int i, int j, int k) {
+    return (0 <= i && i < CHUNKWIDTH)
+        && (0 <= j && j < CHUNKHEIGHT)
+        && (0 <= k && k < CHUNKWIDTH);
+}
+
 extern std::unordered_map<ChunkKey, Chunk> chunks;
 extern std::vector<ChunkKey> chunksToLoadQueue;
 extern std::vector<ChunkKey> chunksToUnloadQueue;
