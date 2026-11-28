@@ -13,7 +13,7 @@ struct ChunkKey {
     int y;
 
     bool operator==(const ChunkKey& other) const {
-        return x == other.x && y == other.y;
+        return (x == other.x) && (y == other.y);
     }
 };
 

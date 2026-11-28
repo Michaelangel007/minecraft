@@ -858,18 +858,18 @@ void updateMesh(chunk& chunk) {
     
 }
 
-void loadChunksAround( const int renderDistance ) {
-    int pChunkX = static_cast<int>(floor(camera.Position.x / CHUNKWIDTH));
-    int pChunkY = static_cast<int>(floor(camera.Position.z / CHUNKWIDTH));
+void loadChunksAround( const int renderDistance, const glm::ivec3 playerChunkPosition ) {
+    int playerChunkX = playerChunkPosition.x;
+    int playerChunkZ = playerChunkPosition.z;
 
     for (int xOffset = -renderDistance; xOffset <= renderDistance; xOffset++) {
-        for (int yOffset = -renderDistance; yOffset <= renderDistance; yOffset++) {
-            int chunkX = pChunkX + xOffset;
-            int chunkY = pChunkY + yOffset;
+        for (int zOffset = -renderDistance; zOffset <= renderDistance; zOffset++) {
+            int chunkX = playerChunkX + xOffset;
+            int chunkZ = playerChunkZ + zOffset;
 
-            int distanceSquared = xOffset * xOffset + yOffset * yOffset;
+            int distanceSquared = (xOffset * xOffset) + (zOffset * zOffset);
             if (distanceSquared <= renderDistance * renderDistance) {
-                ChunkKey key = { chunkX, chunkY };
+                ChunkKey key = { chunkX, chunkZ };
                 auto it = chunks.find(key);
                 if (it == chunks.end() || !it->second.isActive) {
                     if (std::find(chunksToLoadQueue.begin(), chunksToLoadQueue.end(), key) == chunksToLoadQueue.end()) {//pour pas doublons
@@ -881,9 +881,9 @@ void loadChunksAround( const int renderDistance ) {
     }
 }
 
-void unloadDistantChunks( const int unloadDistance ) {
-    int pChunkX = static_cast<int>(floor(camera.Position.x / CHUNKWIDTH));
-    int pChunkY = static_cast<int>(floor(camera.Position.z / CHUNKWIDTH));
+void unloadDistantChunks( const int unloadDistance, const glm::ivec3 playerChunkPosition ) {
+    int playerChunkX = playerChunkPosition.x;
+    int playerChunkZ = playerChunkPosition.z;
 
     std::vector<ChunkKey> chunksToUnload;
 
@@ -891,9 +891,9 @@ void unloadDistantChunks( const int unloadDistance ) {
         Chunk& chunk = pair.second;
 
         if (chunk.isActive) {
-            int distanceX = chunk.key.x - pChunkX;
-            int distanceY = chunk.key.y - pChunkY;
-            int distanceSquared = distanceX * distanceX + distanceY * distanceY;
+            int distanceX = chunk.key.x - playerChunkX;
+            int distanceZ = chunk.key.y - playerChunkZ;
+            int distanceSquared = (distanceX * distanceX) + (distanceZ * distanceZ);
 
             if (distanceSquared > unloadDistance * unloadDistance) {
                 if (std::find(chunksToUnloadQueue.begin(), chunksToUnloadQueue.end(), chunk.key) == chunksToUnloadQueue.end()) {
@@ -1393,14 +1393,15 @@ void processKey() {
 }
 
 void setAtmosphere() {
-    int chunkX = static_cast<int>(floor((float)camera.Position.x / CHUNKWIDTH));
-    int chunkZ = static_cast<int>(floor((float)camera.Position.z / CHUNKWIDTH));
+    int chunkX = camera.PlayerChunkPosition.x;
+    int chunkZ = camera.PlayerChunkPosition.z;
     ChunkKey chunkKey = { chunkX, chunkZ };
 
     auto chunkIt = chunks.find(chunkKey);
     if (chunkIt != chunks.end() && chunkIt->second.isActive) {
-        int localX = camera.Position.x - chunkX * CHUNKWIDTH;
-        int localZ = camera.Position.z - chunkZ * CHUNKWIDTH;
+        int localX = camera.PlayerInChunkOffset.x;
+        int localZ = camera.PlayerInChunkOffset.z;
+
         int blockY = static_cast<int>(floor(camera.Position.y));
         if (blockY < 0) return;
         if (blockY >= CHUNKHEIGHT-1) return;
@@ -1412,6 +1413,16 @@ void setAtmosphere() {
             camera.colorOverlay = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
         }
     }
+}
+
+void updatePlayerChunkPositionOffset() {
+    camera.PlayerChunkPosition.x = static_cast<int>(std::floor(camera.Position.x / CHUNKWIDTH));
+    camera.PlayerChunkPosition.y = static_cast<int>(std::floor(camera.Position.y / CHUNKWIDTH));
+    camera.PlayerChunkPosition.z = static_cast<int>(std::floor(camera.Position.z / CHUNKWIDTH));
+
+    camera.PlayerInChunkOffset.x = static_cast<int>(std::floor(camera.Position.x)) - camera.PlayerChunkPosition.x * CHUNKWIDTH;
+    camera.PlayerInChunkOffset.y = static_cast<int>(std::floor(camera.Position.y)) - camera.PlayerChunkPosition.y * CHUNKWIDTH;
+    camera.PlayerInChunkOffset.z = static_cast<int>(std::floor(camera.Position.z)) - camera.PlayerChunkPosition.z * CHUNKWIDTH;
 }
 
 int main() {
@@ -1429,6 +1440,8 @@ int main() {
     setLightIntensity(skyLight, 0.2f);
     setLightDirection(skyLight, glm::vec3(0.0f, 1.0f, 0.0f));
 
+    updatePlayerChunkPositionOffset();
+
     while (shouldCloseTheApp()) {
         float currentFrame = static_cast<float>(glfwGetTime());
         deltaTime = currentFrame - lastFrame;
@@ -1437,15 +1450,16 @@ int main() {
         //setLightDirection(sun, glm::vec3(-3.0f + glm::cos(glfwGetTime())*2.0, 3.8f + glm::sin(glfwGetTime()) * 2.0, -5.0f));
         //cout << camera.Position.y << endl;
 
-        loadChunksAround( camera.ChunkRenderDistance );
-        unloadDistantChunks( camera.ChunkUnloadDistance );
+        loadChunksAround( camera.ChunkRenderDistance, camera.PlayerChunkPosition );
+        unloadDistantChunks( camera.ChunkUnloadDistance, camera.PlayerChunkPosition );
         processChunkQueues();
         raycastDDA(camera.Position, camera.Front);
+
         processKey();
+        updatePlayerChunkPositionOffset(); // NOTE: Must use new camera position
+
         processClick();
         setAtmosphere();
-        
-
         renderScene();
     }
     terminateRender();

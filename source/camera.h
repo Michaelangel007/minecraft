@@ -42,6 +42,9 @@ public:
     float Zoom;
     float Yspeed;//for falling
 
+    glm::ivec3 PlayerChunkPosition; // chunk coordinate
+    glm::ivec3 PlayerInChunkOffset; // position within a chunk
+
     int ChunkRenderDistance = 10; // distance to render chunks
     int ChunkUnloadDistance = 11; // distance to unload chunks
 
